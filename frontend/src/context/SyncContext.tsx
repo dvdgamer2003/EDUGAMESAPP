@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import NetInfo from '@react-native-community/netinfo';
-import { processQueue, getQueueItems } from '../offline/syncQueue';
+import { processQueue, getQueueItems, subscribeToQueue } from '../offline/syncQueue';
 
 interface SyncContextType {
     isSyncing: boolean;
@@ -17,22 +17,23 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [pendingItems, setPendingItems] = useState(0);
 
     useEffect(() => {
-        const unsubscribe = NetInfo.addEventListener(state => {
+        const unsubscribeNet = NetInfo.addEventListener(state => {
             setIsOffline(!state.isConnected);
             if (state.isConnected) {
                 syncNow();
             }
         });
 
-        checkQueue();
+        // Subscribe to queue changes
+        const unsubscribeQueue = subscribeToQueue((items) => {
+            setPendingItems(items.length);
+        });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribeNet();
+            unsubscribeQueue();
+        };
     }, []);
-
-    const checkQueue = async () => {
-        const items = await getQueueItems();
-        setPendingItems(items.length);
-    };
 
     const syncNow = async () => {
         if (isSyncing) return;
@@ -40,7 +41,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsSyncing(true);
         try {
             await processQueue();
-            await checkQueue();
+            // Queue update will be handled by subscription
         } catch (error) {
             console.error('Sync failed', error);
         } finally {

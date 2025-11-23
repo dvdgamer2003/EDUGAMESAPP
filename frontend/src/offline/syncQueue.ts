@@ -6,13 +6,42 @@ const QUEUE_KEY = 'sync_queue';
 
 export interface QueueItem {
     id: string;
-    type: 'SUBMIT_QUIZ_RESULT' | 'SUBMIT_GAME_RESULT' | 'GENERIC_SYNC';
+    type: 'SUBMIT_QUIZ_RESULT' | 'SUBMIT_GAME_RESULT' | 'GENERIC_SYNC' | 'SYNC_XP';
     data: any;
     timestamp: number;
     retryCount: number;
 }
 
+// Queue processing state
 let isProcessing = false;
+
+// Listeners for queue changes
+type QueueListener = (items: QueueItem[]) => void;
+const listeners: QueueListener[] = [];
+
+/**
+ * Subscribe to queue changes
+ */
+export const subscribeToQueue = (listener: QueueListener): (() => void) => {
+    listeners.push(listener);
+    // Immediately call with current queue
+    getQueueItems().then(listener);
+
+    return () => {
+        const index = listeners.indexOf(listener);
+        if (index > -1) {
+            listeners.splice(index, 1);
+        }
+    };
+};
+
+/**
+ * Notify all listeners
+ */
+const notifyListeners = async () => {
+    const queue = await getQueueItems();
+    listeners.forEach(listener => listener(queue));
+};
 
 /**
  * Add an item to the sync queue
@@ -30,6 +59,7 @@ export const addToQueue = async (type: QueueItem['type'], data: any): Promise<vo
         queue.push(newItem);
         await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
         console.log(`[SyncQueue] Added item to queue: ${type}`);
+        notifyListeners();
     } catch (error) {
         console.error('[SyncQueue] Error adding to queue:', error);
     }
@@ -57,6 +87,7 @@ const removeFromQueue = async (itemId: string): Promise<void> => {
         const updatedQueue = queue.filter((item) => item.id !== itemId);
         await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(updatedQueue));
         console.log(`[SyncQueue] Removed item from queue: ${itemId}`);
+        notifyListeners();
     } catch (error) {
         console.error('[SyncQueue] Error removing from queue:', error);
     }

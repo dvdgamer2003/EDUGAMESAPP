@@ -122,13 +122,13 @@ const QuizScreen = ({ navigation }: any) => {
     return (
         <View style={styles.container}>
             <ScrollView
-                contentContainerStyle={[styles.content, containerStyle, { maxWidth: 800, alignSelf: 'center', width: '100%', paddingHorizontal: isMobile ? spacing.md : spacing.xl, paddingTop: insets.top }]}
+                contentContainerStyle={[styles.content, containerStyle, { maxWidth: 800, alignSelf: 'center', width: '100%', paddingHorizontal: isMobile ? spacing.md : spacing.xl }]}
                 showsVerticalScrollIndicator={false}
             >
                 {/* Header */}
                 <LinearGradient
                     colors={['#6A5AE0', '#5243C2']}
-                    style={styles.headerBackground}
+                    style={[styles.headerBackground, { paddingTop: insets.top + spacing.md }]}
                 >
                     <View style={styles.headerContent}>
                         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>

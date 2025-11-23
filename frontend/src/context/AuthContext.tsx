@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { getData, storeData, removeData } from '../offline/offlineStorage';
+import { addToQueue } from '../offline/syncQueue';
 import { STORAGE_KEYS } from '../utils/constants';
 import api from '../services/api';
 import { ENDPOINTS } from '../services/endpoints';
@@ -33,18 +34,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [streak, setStreak] = useState(0);
     const [level, setLevel] = useState(1);
     const [showLevelUp, setShowLevelUp] = useState(false);
-    const [xpQueue, setXpQueue] = useState<{ amount: number, source: string }[]>([]);
+
 
     useEffect(() => {
         loadUser();
     }, []);
 
-    // Sync XP queue when online
-    useEffect(() => {
-        if (token && xpQueue.length > 0) {
-            syncXPQueue();
-        }
-    }, [token, xpQueue]);
+
 
     const loadUser = async () => {
         try {
@@ -133,24 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
-    const syncXPQueue = async () => {
-        if (!token || xpQueue.length === 0) return;
 
-        try {
-            for (const item of xpQueue) {
-                await api.post('/xp/add', item, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-            }
-            setXpQueue([]);
-            await removeData('xp_queue');
-        } catch (error: any) {
-            console.log('XP queue sync failed:', error);
-            if (error.status === 401 || error.response?.status === 401) {
-                await logout();
-            }
-        }
-    };
 
     const login = async (email: string, password: string, role: 'student' | 'teacher') => {
         try {
@@ -242,15 +221,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 });
             } catch (error) {
                 console.log('XP sync failed, adding to queue');
-                const newQueue = [...xpQueue, { amount, source }];
-                setXpQueue(newQueue);
-                await storeData('xp_queue', JSON.stringify(newQueue));
+                await addToQueue('SYNC_XP', { amount, source });
             }
         } else {
             // Offline - add to queue
-            const newQueue = [...xpQueue, { amount, source }];
-            setXpQueue(newQueue);
-            await storeData('xp_queue', JSON.stringify(newQueue));
+            await addToQueue('SYNC_XP', { amount, source });
         }
     };
 

@@ -26,6 +26,7 @@ import RewardsScreen from '../screens/RewardsScreen';
 import SyncScreen from '../screens/SyncScreen';
 import TeacherDashboard from '../screens/TeacherDashboard';
 import LeaderboardScreen from '../screens/LeaderboardScreen';
+import ScienceScreen from '../screens/ScienceScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -69,6 +70,7 @@ const MainNavigator = () => {
             <Stack.Screen name="Sync" component={SyncScreen} />
             <Stack.Screen name="TeacherDashboard" component={TeacherDashboard} />
             <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
+            <Stack.Screen name="Science" component={ScienceScreen} />
         </Stack.Navigator>
     );
 };

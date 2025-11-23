@@ -165,7 +165,7 @@ const SimulationListScreen = ({ route, navigation }: any) => {
                 colors={['#6A5AE0', '#8E2DE2', '#C0B6F2']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={[styles.headerBackground, { paddingTop: insets.top }]}
+                style={[styles.headerBackground, { paddingTop: insets.top + spacing.md }]}
             >
                 {/* Decorative circles */}
                 <View style={[styles.decorativeCircle, { top: -50, right: -30, width: 150, height: 150 }]} />

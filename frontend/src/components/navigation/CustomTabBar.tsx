@@ -70,10 +70,10 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
                 style={[
                     styles.floatingBar,
                     isWeb && styles.webBar,
-                    Platform.OS === 'android' && { backgroundColor: isDark ? 'rgba(30,41,59,0.9)' : 'rgba(255,255,255,0.9)' }
+                    Platform.OS === 'android' && { backgroundColor: 'transparent', elevation: 0 }
                 ]}
             >
-                <BlurView intensity={isWeb ? 20 : 80} tint={isDark ? 'dark' : 'light'} style={styles.blurContent}>
+                <BlurView intensity={isWeb ? 20 : 50} tint={isDark ? 'dark' : 'default'} style={styles.blurContent}>
                     <View style={styles.tabRow}>
                         {state.routes.map((route, index) => {
                             const { options } = descriptors[route.key];
@@ -181,7 +181,10 @@ const styles = StyleSheet.create({
     },
     blurContent: {
         flex: 1,
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        backgroundColor: 'rgba(255, 255, 255, 0.05)', // Ultra subtle shine
+        borderWidth: 1.5,
+        borderColor: 'rgba(255, 255, 255, 0.5)', // Crisp glass edge
+        borderRadius: 32,
     },
     tabRow: {
         flex: 1,

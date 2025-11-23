@@ -3,8 +3,8 @@ import { STORAGE_KEYS } from '../utils/constants';
 import { getData } from '../offline/offlineStorage';
 
 // Update this with your computer's IP address for mobile testing
-// Example: 'http://192.168.1.5:5000/api'
-const API_BASE_URL = 'http://localhost:5000/api';
+// For mobile devices, use your computer's IP address instead of localhost
+const API_BASE_URL = 'http://192.168.1.7:5000/api';
 
 const api = axios.create({
     baseURL: API_BASE_URL,

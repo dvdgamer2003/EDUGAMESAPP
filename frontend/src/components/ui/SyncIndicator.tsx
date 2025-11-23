@@ -28,7 +28,7 @@ const SyncIndicator = () => {
                     )}
 
                     <Text variant="labelSmall" style={{ color: isOffline ? theme.colors.error : theme.colors.onSurfaceVariant }}>
-                        {isSyncing ? 'Syncing...' : isOffline ? 'Offline' : `${pendingItems} pending`}
+                        {isSyncing ? 'Syncing...' : isOffline ? (pendingItems > 0 ? `Offline (${pendingItems})` : 'Offline') : `${pendingItems} pending`}
                     </Text>
                 </Surface>
             </TouchableOpacity>

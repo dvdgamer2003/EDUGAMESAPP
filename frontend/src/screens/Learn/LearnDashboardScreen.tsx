@@ -12,6 +12,7 @@ import { spacing, gradients, borderRadius } from '../../theme';
 import { useResponsive } from '../../hooks/useResponsive';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MobileLearnDashboard from './MobileLearnDashboard'; // Mobile optimized dashboard
 
 const { width } = Dimensions.get('window');
 
@@ -21,6 +22,13 @@ const LearnDashboardScreen = ({ navigation }: any) => {
     const insets = useSafeAreaInsets();
     const { user, xp, streak } = useAuth();
     const { isMobile } = useResponsive();
+
+    // Render mobile version if on mobile
+    if (isMobile) {
+        return <MobileLearnDashboard navigation={navigation} />;
+    }
+
+    // Desktop version continues below
     const [subjects, setSubjects] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedClass, setSelectedClass] = useState<number | null>(user?.class || 6);
@@ -162,14 +170,14 @@ const LearnDashboardScreen = ({ navigation }: any) => {
             <View style={styles.contentContainer}>
                 <ScrollView
                     showsVerticalScrollIndicator={false}
-                    contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]}
+                    contentContainerStyle={styles.scrollContent}
                 >
                     {/* Header Background */}
                     <LinearGradient
                         colors={['#6A5AE0', '#8B7AFF']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
-                        style={styles.headerBackground}
+                        style={[styles.headerBackground, { paddingTop: insets.top + spacing.md }]}
                     >
                         {renderHeader()}
                         <View style={styles.headerContent}>
@@ -285,7 +293,6 @@ const createStyles = (isDark: boolean) => StyleSheet.create({
         backgroundColor: isDark ? '#0F172A' : '#F5F5F7',
     },
     headerBackground: {
-        paddingTop: spacing.xl + 12,
         paddingBottom: spacing.xxl + 12,
         borderBottomLeftRadius: 30,
         borderBottomRightRadius: 30,
@@ -307,11 +314,9 @@ const createStyles = (isDark: boolean) => StyleSheet.create({
     },
     contentContainer: {
         flex: 1,
-        marginTop: -spacing.xl - 4,
     },
     scrollContent: {
         paddingBottom: spacing.xxl + 30,
-        paddingTop: spacing.lg + 4,
     },
     userInfo: {
         flexDirection: 'row',

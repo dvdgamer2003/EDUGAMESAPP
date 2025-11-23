@@ -147,12 +147,12 @@ const XPProgressCard: React.FC<XPProgressCardProps> = ({ level, currentXP, xpFor
 
 const styles = StyleSheet.create({
     container: {
-        marginBottom: spacing.lg,
+        // marginBottom removed to allow parent to control spacing
     },
     glassCard: {
         borderRadius: borderRadius.xl,
         overflow: 'hidden',
-        padding: spacing.lg,
+        padding: spacing.md,
         backgroundColor: 'rgba(255,255,255,0.1)',
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.2)',

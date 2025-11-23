@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, ScrollView, TouchableOpacity, Platform, StatusBar } from 'react-native';
+import { View, StyleSheet, FlatList, ScrollView, TouchableOpacity, Platform, StatusBar, Image } from 'react-native';
 import { Text, useTheme, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -11,7 +11,7 @@ import { useResponsive } from '../hooks/useResponsive';
 import Animated, { FadeInDown, FadeInRight, FadeIn } from 'react-native-reanimated';
 import { spacing, gradients, colors, borderRadius } from '../theme';
 import { getStaggerDelay } from '../utils/animations';
-import UserGreetingCard from '../components/UserGreetingCard';
+import UserGreetingCard, { AVATAR_OPTIONS } from '../components/UserGreetingCard';
 import XPProgressCard from '../components/XPProgressCard';
 import ConfettiAnimation from '../components/ConfettiAnimation';
 import { useTranslation } from '../i18n';
@@ -22,6 +22,8 @@ import OnboardingTutorial from '../components/OnboardingTutorial';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import MobileHomeHeader from '../components/home/MobileHomeHeader';
+import MobileHomeScreen from './MobileHomeScreen';
 
 const HomeScreen = ({ navigation }: any) => {
     const { user, xp, streak } = useAuth();
@@ -148,6 +150,10 @@ const HomeScreen = ({ navigation }: any) => {
         return gradients[subject] || ['#607D8B', '#90A4AE'];
     };
 
+    if (isMobile) {
+        return <MobileHomeScreen navigation={navigation} />;
+    }
+
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
@@ -156,7 +162,7 @@ const HomeScreen = ({ navigation }: any) => {
             <ScrollView
                 style={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={[styles.scrollContentContainer, { paddingTop: insets.top }]}
+                contentContainerStyle={styles.scrollContentContainer}
                 removeClippedSubviews={true}
             >
                 {/* Header Section */}
@@ -164,38 +170,51 @@ const HomeScreen = ({ navigation }: any) => {
                     colors={gradients.primary}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={styles.headerBackground}
+                    style={[styles.headerBackground, { paddingTop: 0 }]}
                 >
                     {/* Decorative circles */}
                     <View style={[styles.decorativeCircle, { top: -60, right: -40, width: 180, height: 180 }]} />
                     <View style={[styles.decorativeCircle, { bottom: -50, left: -30, width: 150, height: 150 }]} />
 
                     <Animated.View entering={FadeInDown.duration(600)} style={styles.headerContent}>
-                        <View style={styles.greetingRow}>
-                            <UserGreetingCard
-                                userName={user?.name || 'Guest'}
+                        {isMobile ? (
+                            <MobileHomeHeader
+                                user={user}
                                 streak={streak}
-                                avatarId={parseInt(user?.avatar || '1')}
-                                variant="light"
+                                xp={xp}
+                                level={level}
+                                onProfilePress={() => navigation.navigate('Profile')}
+                                onSearchPress={() => navigation.navigate('Learn')}
                             />
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                <LanguageSwitcher />
-                                <TouchableOpacity
-                                    style={styles.searchButton}
-                                    onPress={() => navigation.navigate('Learn')}
-                                >
-                                    <MaterialCommunityIcons name="magnify" size={24} color="#fff" />
-                                </TouchableOpacity>
-                            </View>
-                        </View>
+                        ) : (
+                            <>
+                                <View style={styles.greetingRow}>
+                                    <UserGreetingCard
+                                        userName={user?.name || 'Guest'}
+                                        streak={streak}
+                                        avatarId={parseInt(user?.avatar || '1')}
+                                        variant="light"
+                                    />
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                        <LanguageSwitcher />
+                                        <TouchableOpacity
+                                            style={styles.searchButton}
+                                            onPress={() => navigation.navigate('Learn')}
+                                        >
+                                            <MaterialCommunityIcons name="magnify" size={24} color="#fff" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
 
-                        <XPProgressCard
-                            level={level}
-                            currentXP={xpInLevel}
-                            xpForNextLevel={xpForNextLevel}
-                            totalXP={xp}
-                            variant="light"
-                        />
+                                <XPProgressCard
+                                    level={level}
+                                    currentXP={xpInLevel}
+                                    xpForNextLevel={xpForNextLevel}
+                                    totalXP={xp}
+                                    variant="light"
+                                />
+                            </>
+                        )}
                     </Animated.View>
                 </LinearGradient>
 
@@ -391,7 +410,7 @@ const HomeScreen = ({ navigation }: any) => {
                         );
                     })}
                 </View>
-            </ScrollView>
+            </ScrollView >
 
             {selectedSim && (
                 <SimulationViewer
@@ -408,15 +427,17 @@ const HomeScreen = ({ navigation }: any) => {
                 onClose={() => setShowStreakCelebration(false)}
             />
 
-            {showOnboarding && (
-                <OnboardingTutorial onComplete={() => setShowOnboarding(false)} />
-            )}
+            {
+                showOnboarding && (
+                    <OnboardingTutorial onComplete={() => setShowOnboarding(false)} />
+                )
+            }
 
             <ConfettiAnimation
                 isVisible={showConfetti}
                 onComplete={() => setShowConfetti(false)}
             />
-        </View>
+        </View >
     );
 };
 
@@ -443,13 +464,15 @@ const createStyles = (isDark: boolean) => StyleSheet.create({
     },
     headerContent: {
         paddingHorizontal: spacing.lg,
-        paddingTop: spacing.md,
+        paddingTop: 0,
+        paddingBottom: spacing.xs,
+        gap: 0,
     },
     greetingRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: spacing.lg,
+        marginBottom: spacing.xs,
     },
     searchButton: {
         backgroundColor: 'rgba(255,255,255,0.2)',
@@ -464,7 +487,7 @@ const createStyles = (isDark: boolean) => StyleSheet.create({
     },
     dailyGoalSection: {
         paddingHorizontal: spacing.lg,
-        marginTop: -spacing.lg,
+        marginTop: -spacing.xl,
         marginBottom: spacing.md,
     },
     dailyGoalCard: {

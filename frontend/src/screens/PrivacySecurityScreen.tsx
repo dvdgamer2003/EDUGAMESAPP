@@ -97,7 +97,7 @@ const PrivacySecurityScreen = ({ navigation }: any) => {
                 colors={['#667EEA', '#764BA2', '#5B4B8A']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={[styles.headerBackground, { paddingTop: insets.top }]}
+                style={[styles.headerBackground, { paddingTop: insets.top + spacing.md }]}
             >
                 {/* Decorative circles */}
                 <View style={[styles.decorativeCircle, { top: -60, right: -40, width: 180, height: 180 }]} />

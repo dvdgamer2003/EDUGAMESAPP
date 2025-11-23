@@ -15,6 +15,9 @@ export const syncItem = async (item: QueueItem): Promise<void> => {
         case 'GENERIC_SYNC':
             await syncGeneric(item.data);
             break;
+        case 'SYNC_XP':
+            await syncXP(item.data);
+            break;
         default:
             throw new Error(`Unknown sync type: ${item.type}`);
     }
@@ -53,5 +56,14 @@ const syncGeneric = async (data: any): Promise<void> => {
 
     // Mock implementation
     console.log('[SyncService] Syncing generic data:', data);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+};
+
+/**
+ * Sync XP to backend
+ */
+const syncXP = async (data: { amount: number, source: string }): Promise<void> => {
+    // await api.post('/xp/add', data);
+    console.log('[SyncService] Syncing XP:', data);
     await new Promise((resolve) => setTimeout(resolve, 500));
 };

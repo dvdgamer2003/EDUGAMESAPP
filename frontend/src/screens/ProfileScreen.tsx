@@ -75,7 +75,7 @@ const ProfileScreen = ({ navigation }: any) => {
     return (
         <View style={styles.container}>
             <ScrollView
-                contentContainerStyle={[styles.content, containerStyle, { paddingTop: insets.top }]}
+                contentContainerStyle={[styles.content, containerStyle]}
                 showsVerticalScrollIndicator={false}
             >
                 {/* Header */}
@@ -83,7 +83,7 @@ const ProfileScreen = ({ navigation }: any) => {
                     colors={gradients.primary}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={styles.headerBackground}
+                    style={[styles.headerBackground, { paddingTop: insets.top + spacing.md }]}
                 >
                     {/* Decorative circles */}
                     <View style={[styles.decorativeCircle, { top: -70, right: -50, width: 200, height: 200 }]} />

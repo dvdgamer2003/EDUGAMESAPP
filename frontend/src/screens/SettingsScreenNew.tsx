@@ -119,7 +119,7 @@ const SettingsScreen = ({ navigation }: any) => {
 
             <ScrollView
                 style={styles.scrollView}
-                contentContainerStyle={[styles.scrollContent, containerStyle, { paddingTop: insets.top }]}
+                contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
                 {/* Header */}
@@ -127,7 +127,7 @@ const SettingsScreen = ({ navigation }: any) => {
                     colors={['#667EEA', '#764BA2', '#5B4B8A']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={styles.headerBackground}
+                    style={[styles.headerBackground, { paddingTop: insets.top + spacing.md }]}
                 >
                     <View style={styles.headerContent}>
                         <Text variant="headlineMedium" style={styles.headerTitle}>Settings</Text>
@@ -416,6 +416,7 @@ const createStyles = (isDark: boolean) => StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
+        flexGrow: 1,
         paddingBottom: 100,
     },
     headerBackground: {

@@ -10,7 +10,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { useResponsive } from '../hooks/useResponsive';
 
 // Avatar options with local images
-const AVATAR_OPTIONS = [
+export const AVATAR_OPTIONS = [
     { id: 1, source: require('../assets/avatars/avatar_student_1_1763752373295.png'), gradient: ['#FF6B6B', '#FF8E53'] as const },
     { id: 2, source: require('../assets/avatars/avatar_student_2_1763752389652.png'), gradient: ['#4FACFE', '#00F2FE'] as const },
     { id: 3, source: require('../assets/avatars/avatar_student_3_1763752405157.png'), gradient: ['#A8EDEA', '#FED6E3'] as const },
@@ -123,7 +123,7 @@ const UserGreetingCard: React.FC<UserGreetingCardProps> = ({ userName, streak, a
 
 const styles = StyleSheet.create({
     container: {
-        marginBottom: spacing.lg,
+        // marginBottom removed to allow parent to control spacing
     },
     content: {
         flexDirection: 'row',

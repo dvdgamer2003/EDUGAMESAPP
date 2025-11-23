@@ -1,5 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Platform } from 'react-native';
 import LearnDashboardScreen from '../screens/Learn/LearnDashboardScreen';
 import ClassSelectionScreen from '../screens/Learn/ClassSelectionScreen';
 import SubjectSelectionScreen from '../screens/Learn/SubjectSelectionScreen';
@@ -11,11 +12,16 @@ import SimulationListScreen from '../screens/Learn/SimulationListScreen';
 import QuizScreen from '../screens/QuizScreen';
 import LessonReaderScreen from '../screens/Learn/LessonReaderScreen';
 import ModelListScreen from '../screens/ModelListScreen';
+import MobileModelListScreen from '../screens/MobileModelListScreen';
 import ThreeDModelScreen from '../screens/ThreeDModelScreen';
+import Mobile3DViewer from '../screens/Mobile3DViewer';
+import { useResponsive } from '../hooks/useResponsive';
 
 const Stack = createNativeStackNavigator();
 
 const LearnNavigator = () => {
+    const { isMobile } = useResponsive();
+
     return (
         <Stack.Navigator
             screenOptions={{
@@ -34,8 +40,14 @@ const LearnNavigator = () => {
             <Stack.Screen name="SimulationList" component={SimulationListScreen} />
             <Stack.Screen name="Quiz" component={QuizScreen} />
             <Stack.Screen name="LessonReader" component={LessonReaderScreen} />
-            <Stack.Screen name="ModelList" component={ModelListScreen} />
-            <Stack.Screen name="ThreeDModel" component={ThreeDModelScreen} />
+            <Stack.Screen
+                name="ModelList"
+                component={isMobile ? MobileModelListScreen : ModelListScreen}
+            />
+            <Stack.Screen
+                name="ThreeDModel"
+                component={Platform.OS === 'web' ? ThreeDModelScreen : Mobile3DViewer}
+            />
         </Stack.Navigator>
     );
 };
