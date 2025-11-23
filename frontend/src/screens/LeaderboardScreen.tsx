@@ -8,6 +8,7 @@ import CustomCard from '../components/ui/CustomCard';
 import { useAuth } from '../context/AuthContext';
 import { useAppTheme } from '../context/ThemeContext';
 import api from '../services/api';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const AVATAR_OPTIONS = [
     { id: 1, source: require('../assets/avatars/avatar_student_1_1763752373295.png'), gradient: ['#FF6B6B', '#FF8E53'] as const },
@@ -264,7 +265,7 @@ const LeaderboardScreen = () => {
                         <MaterialCommunityIcons name="trophy" size={28} color="#FFD700" />
                         <Text style={styles.headerTitle}>Leaderboard</Text>
                     </View>
-                    <View style={{ width: 44 }} />
+                    <LanguageSwitcher />
                 </LinearGradient>
 
                 {/* Time Filter */}

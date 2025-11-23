@@ -63,7 +63,8 @@ const getOrganImage = (organName: string) => {
 const LabelOrganGame = () => {
     const navigation = useNavigation();
     const { addXP } = useAuth();
-    const theme = useTheme();
+    const { isDark } = useAppTheme();
+    const styles = createStyles(isDark);
     const [score, setScore] = useState(0);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -105,10 +106,12 @@ const LabelOrganGame = () => {
         setQuestions(shuffled.slice(0, 10));
     };
 
+    // ... (rest of the component)
+
     if (gameOver) {
         return (
             <LinearGradient
-                colors={['#f093fb', '#f5576c']}
+                colors={isDark ? ['#4A148C', '#880E4F'] : ['#f093fb', '#f5576c']}
                 style={styles.container}
             >
                 <View style={styles.innerContainer}>
@@ -160,7 +163,7 @@ const LabelOrganGame = () => {
                                     mode="outlined"
                                     onPress={() => navigation.goBack()}
                                     style={styles.outlineButton}
-                                    textColor="#f5576c"
+                                    textColor={isDark ? '#f093fb' : '#f5576c'}
                                 >
                                     Exit
                                 </Button>
@@ -180,7 +183,7 @@ const LabelOrganGame = () => {
 
     return (
         <LinearGradient
-            colors={['#f093fb', '#f5576c']}
+            colors={isDark ? ['#4A148C', '#880E4F'] : ['#f093fb', '#f5576c']}
             style={styles.container}
         >
             <View style={styles.innerContainer}>
@@ -196,7 +199,7 @@ const LabelOrganGame = () => {
                 </View>
 
                 <LinearGradient
-                    colors={['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)']}
+                    colors={isDark ? ['#1E293B', '#0F172A'] : ['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)']}
                     style={styles.scoreCard}
                 >
                     <View style={styles.scoreItem}>
@@ -204,7 +207,7 @@ const LabelOrganGame = () => {
                         <Text variant="titleMedium" style={styles.scoreLabel}>Score: {score}</Text>
                     </View>
                     <View style={styles.scoreItem}>
-                        <MaterialCommunityIcons name="human" size={20} color="#f5576c" />
+                        <MaterialCommunityIcons name="human" size={20} color={isDark ? '#f093fb' : '#f5576c'} />
                         <Text variant="bodyMedium" style={styles.questionLabel}>Question {currentQuestion + 1}/{questions.length}</Text>
                     </View>
                 </LinearGradient>
@@ -273,7 +276,7 @@ const LabelOrganGame = () => {
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (isDark: boolean) => StyleSheet.create({
     container: {
         flex: 1,
     },
@@ -308,10 +311,10 @@ const styles = StyleSheet.create({
     },
     scoreLabel: {
         fontWeight: 'bold',
-        color: '#333',
+        color: isDark ? '#F1F5F9' : '#333',
     },
     questionLabel: {
-        color: '#666',
+        color: isDark ? '#CBD5E1' : '#666',
     },
     gameArea: {
         flex: 1,
@@ -321,17 +324,17 @@ const styles = StyleSheet.create({
         padding: spacing.lg,
         marginBottom: spacing.lg,
         borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backgroundColor: isDark ? '#1E293B' : 'rgba(255, 255, 255, 0.95)',
         elevation: 3,
     },
     questionText: {
         textAlign: 'center',
         fontWeight: 'bold',
-        color: '#333',
+        color: isDark ? '#F1F5F9' : '#333',
     },
     organDisplay: {
         height: 300,
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        backgroundColor: isDark ? 'rgba(30,41,59,0.9)' : 'rgba(255, 255, 255, 0.9)',
         borderRadius: 20,
         justifyContent: 'center',
         alignItems: 'center',
@@ -345,7 +348,7 @@ const styles = StyleSheet.create({
         marginBottom: spacing.sm,
     },
     instructionText: {
-        color: '#666',
+        color: isDark ? '#CBD5E1' : '#666',
         fontStyle: 'italic',
     },
     optionsContainer: {
@@ -392,13 +395,13 @@ const styles = StyleSheet.create({
         padding: spacing.xl,
         borderRadius: 24,
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.98)',
+        backgroundColor: isDark ? '#1E293B' : 'rgba(255, 255, 255, 0.98)',
     },
     resultTitle: {
         fontWeight: 'bold',
         marginTop: spacing.md,
         marginBottom: spacing.lg,
-        color: '#333',
+        color: isDark ? '#F1F5F9' : '#333',
     },
     scoreGradient: {
         paddingHorizontal: spacing.xl,
@@ -412,7 +415,7 @@ const styles = StyleSheet.create({
     },
     resultMessage: {
         marginBottom: spacing.xl,
-        color: '#666',
+        color: isDark ? '#CBD5E1' : '#666',
         fontSize: 18,
     },
     buttonRow: {
@@ -432,7 +435,7 @@ const styles = StyleSheet.create({
     outlineButton: {
         borderRadius: 12,
         borderWidth: 2,
-        borderColor: '#f5576c',
+        borderColor: isDark ? '#f093fb' : '#f5576c',
     },
 });
 

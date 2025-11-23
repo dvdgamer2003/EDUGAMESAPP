@@ -10,6 +10,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { useResponsive } from '../hooks/useResponsive';
 import { spacing, gradients, colors } from '../theme';
 import CustomButton from '../components/ui/CustomButton';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const AVATAR_OPTIONS = [
     { id: 1, source: require('../assets/avatars/avatar_student_1_1763752373295.png'), gradient: ['#FF6B6B', '#FF8E53'] as const },
@@ -97,7 +98,7 @@ const ProfileScreen = ({ navigation }: any) => {
                             <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
                         </TouchableOpacity>
                         <Text variant="headlineMedium" style={styles.headerTitle}>Profile</Text>
-                        <View style={{ width: 44 }} />
+                        <LanguageSwitcher />
                     </View>
 
                     {/* Avatar Section in Header */}

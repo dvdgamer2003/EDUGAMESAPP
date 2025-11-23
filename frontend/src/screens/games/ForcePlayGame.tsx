@@ -12,6 +12,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 const ForcePlayGame = () => {
     const navigation = useNavigation();
     const { addXP } = useAuth();
+    const { isDark } = useAppTheme();
+    const styles = createStyles(isDark);
     const theme = useTheme();
     const [force, setForce] = useState(5);
     const [mass, setMass] = useState(5);
@@ -75,10 +77,12 @@ const ForcePlayGame = () => {
         objectPosition.value = 0;
     };
 
+    // ... (rest of the component)
+
     if (gameOver) {
         return (
             <LinearGradient
-                colors={['#667eea', '#4facfe']}
+                colors={isDark ? ['#311B92', '#1A237E'] : ['#667eea', '#4facfe']}
                 style={styles.container}
             >
                 <View style={styles.innerContainer}>
@@ -130,7 +134,7 @@ const ForcePlayGame = () => {
                                     mode="outlined"
                                     onPress={() => navigation.goBack()}
                                     style={styles.outlineButton}
-                                    textColor="#667eea"
+                                    textColor={isDark ? '#667eea' : '#667eea'}
                                 >
                                     Exit
                                 </Button>
@@ -144,7 +148,7 @@ const ForcePlayGame = () => {
 
     return (
         <LinearGradient
-            colors={['#667eea', '#4facfe']}
+            colors={isDark ? ['#311B92', '#1A237E'] : ['#667eea', '#4facfe']}
             style={styles.container}
         >
             <View style={styles.innerContainer}>
@@ -160,7 +164,7 @@ const ForcePlayGame = () => {
                 </View>
 
                 <LinearGradient
-                    colors={['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)']}
+                    colors={isDark ? ['#1E293B', '#0F172A'] : ['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)']}
                     style={styles.scoreCard}
                 >
                     <View style={styles.scoreItem}>
@@ -168,7 +172,7 @@ const ForcePlayGame = () => {
                         <Text variant="titleMedium" style={styles.scoreLabel}>Score: {score}</Text>
                     </View>
                     <View style={styles.scoreItem}>
-                        <MaterialCommunityIcons name="counter" size={20} color="#667eea" />
+                        <MaterialCommunityIcons name="counter" size={20} color={isDark ? '#667eea' : '#667eea'} />
                         <Text variant="bodyMedium" style={styles.questionLabel}>Round {round}/5</Text>
                     </View>
                 </LinearGradient>
@@ -239,7 +243,7 @@ const ForcePlayGame = () => {
                                 <IconButton
                                     icon="minus"
                                     size={24}
-                                    iconColor="#667eea"
+                                    iconColor={isDark ? '#667eea' : '#667eea'}
                                     onPress={() => setPrediction(Math.max(0, (prediction || 0) - 0.5))}
                                     style={styles.controlButton}
                                 />
@@ -254,7 +258,7 @@ const ForcePlayGame = () => {
                                 <IconButton
                                     icon="plus"
                                     size={24}
-                                    iconColor="#667eea"
+                                    iconColor={isDark ? '#667eea' : '#667eea'}
                                     onPress={() => setPrediction(Math.min(20, (prediction || 0) + 0.5))}
                                     style={styles.controlButton}
                                 />
@@ -281,7 +285,7 @@ const ForcePlayGame = () => {
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (isDark: boolean) => StyleSheet.create({
     container: {
         flex: 1,
     },
@@ -316,10 +320,10 @@ const styles = StyleSheet.create({
     },
     scoreLabel: {
         fontWeight: 'bold',
-        color: '#333',
+        color: isDark ? '#F1F5F9' : '#333',
     },
     questionLabel: {
-        color: '#666',
+        color: isDark ? '#CBD5E1' : '#666',
     },
     gameArea: {
         flex: 1,
@@ -329,7 +333,7 @@ const styles = StyleSheet.create({
         padding: spacing.lg,
         marginBottom: spacing.lg,
         borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backgroundColor: isDark ? '#1E293B' : 'rgba(255, 255, 255, 0.95)',
         alignItems: 'center',
     },
     formulaBadge: {
@@ -343,14 +347,14 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     instructionText: {
-        color: '#666',
+        color: isDark ? '#CBD5E1' : '#666',
         textAlign: 'center',
     },
     simulationArea: {
         padding: spacing.lg,
         marginBottom: spacing.lg,
         borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        backgroundColor: isDark ? 'rgba(30,41,59,0.9)' : 'rgba(255, 255, 255, 0.9)',
         minHeight: 200,
     },
     parameterRow: {
@@ -372,7 +376,7 @@ const styles = StyleSheet.create({
     },
     track: {
         height: 80,
-        backgroundColor: '#E0E0E0',
+        backgroundColor: isDark ? '#334155' : '#E0E0E0',
         borderRadius: 12,
         justifyContent: 'center',
         marginBottom: spacing.md,
@@ -401,12 +405,12 @@ const styles = StyleSheet.create({
     controlCard: {
         padding: spacing.lg,
         borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        backgroundColor: isDark ? '#1E293B' : 'rgba(255, 255, 255, 0.9)',
     },
     controlTitle: {
         marginBottom: spacing.md,
         fontWeight: 'bold',
-        color: '#333',
+        color: isDark ? '#F1F5F9' : '#333',
         textAlign: 'center',
     },
     predictionContainer: {
@@ -443,13 +447,13 @@ const styles = StyleSheet.create({
         padding: spacing.xl,
         borderRadius: 24,
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.98)',
+        backgroundColor: isDark ? '#1E293B' : 'rgba(255, 255, 255, 0.98)',
     },
     resultTitle: {
         fontWeight: 'bold',
         marginTop: spacing.md,
         marginBottom: spacing.lg,
-        color: '#333',
+        color: isDark ? '#F1F5F9' : '#333',
     },
     scoreGradient: {
         paddingHorizontal: spacing.xl,
@@ -463,7 +467,7 @@ const styles = StyleSheet.create({
     },
     resultMessage: {
         marginBottom: spacing.xl,
-        color: '#666',
+        color: isDark ? '#CBD5E1' : '#666',
         fontSize: 18,
     },
     buttonRow: {
@@ -483,7 +487,7 @@ const styles = StyleSheet.create({
     outlineButton: {
         borderRadius: 12,
         borderWidth: 2,
-        borderColor: '#667eea',
+        borderColor: isDark ? '#667eea' : '#667eea',
     },
 });
 

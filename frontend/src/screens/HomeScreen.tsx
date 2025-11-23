@@ -21,6 +21,7 @@ import StreakCelebration from '../components/StreakCelebration';
 import OnboardingTutorial from '../components/OnboardingTutorial';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const HomeScreen = ({ navigation }: any) => {
     const { user, xp, streak } = useAuth();
@@ -177,12 +178,15 @@ const HomeScreen = ({ navigation }: any) => {
                                 avatarId={parseInt(user?.avatar || '1')}
                                 variant="light"
                             />
-                            <TouchableOpacity
-                                style={styles.searchButton}
-                                onPress={() => navigation.navigate('Learn')}
-                            >
-                                <MaterialCommunityIcons name="magnify" size={24} color="#fff" />
-                            </TouchableOpacity>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                <LanguageSwitcher />
+                                <TouchableOpacity
+                                    style={styles.searchButton}
+                                    onPress={() => navigation.navigate('Learn')}
+                                >
+                                    <MaterialCommunityIcons name="magnify" size={24} color="#fff" />
+                                </TouchableOpacity>
+                            </View>
                         </View>
 
                         <XPProgressCard

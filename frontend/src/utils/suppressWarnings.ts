@@ -10,7 +10,7 @@ const SUPPRESSED_WARNINGS = [
     '"shadow*" style props are deprecated',
     '"textShadow*" style props are deprecated',
     'props.pointerEvents is deprecated',
-    '[expo-av]: Expo AV has been deprecated',
+
     'Animated: `useNativeDriver` is not supported',
     'Download the React DevTools',
 ];
