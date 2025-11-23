@@ -25,8 +25,20 @@ files_to_fix = [
     r"c:\Users\divye\OneDrive\Desktop\Ged1\Ged\rural-learning-app\frontend\assets\images\onboarding\compete.png",
     r"c:\Users\divye\OneDrive\Desktop\Ged1\Ged\rural-learning-app\frontend\assets\images\onboarding\streak.png", # NEW FAILURE
     
-    # Avatars (NEW FAILURE)
-    r"c:\Users\divye\OneDrive\Desktop\Ged1\Ged\rural-learning-app\frontend\src\assets\avatars\avatar_student_6_1763752457724.png"
+    # Avatars (ALL OF THEM)
+    r"c:\Users\divye\OneDrive\Desktop\Ged1\Ged\rural-learning-app\frontend\src\assets\avatars\avatar_student_1_1763752373295.png",
+    r"c:\Users\divye\OneDrive\Desktop\Ged1\Ged\rural-learning-app\frontend\src\assets\avatars\avatar_student_2_1763752389652.png",
+    r"c:\Users\divye\OneDrive\Desktop\Ged1\Ged\rural-learning-app\frontend\src\assets\avatars\avatar_student_3_1763752405157.png",
+    r"c:\Users\divye\OneDrive\Desktop\Ged1\Ged\rural-learning-app\frontend\src\assets\avatars\avatar_student_4_1763752424974.png",
+    r"c:\Users\divye\OneDrive\Desktop\Ged1\Ged\rural-learning-app\frontend\src\assets\avatars\avatar_student_5_1763752442026.png",
+    r"c:\Users\divye\OneDrive\Desktop\Ged1\Ged\rural-learning-app\frontend\src\assets\avatars\avatar_student_6_1763752457724.png",
+    r"c:\Users\divye\OneDrive\Desktop\Ged1\Ged\rural-learning-app\frontend\src\assets\avatars\avatar_student_7_1763752477440.png",
+
+    # Root Assets
+    r"c:\Users\divye\OneDrive\Desktop\Ged1\Ged\rural-learning-app\frontend\assets\loading-brain.png",
+    
+    # Onboarding Extra
+    r"c:\Users\divye\OneDrive\Desktop\Ged1\Ged\rural-learning-app\frontend\assets\images\onboarding\streak_render.png"
 ]
 
 for file_path in files_to_fix:
