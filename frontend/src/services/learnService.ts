@@ -6,7 +6,8 @@ import offlineDataService from './offlineDataService';
 const CACHE_PREFIX = 'learn_cache_';
 
 // Set to true to force offline mode (bypass API and cache)
-const FORCE_OFFLINE = true;
+// Set to true to force offline mode (bypass API and cache)
+const FORCE_OFFLINE = false;
 
 export const learnService = {
     getClasses: async () => {
