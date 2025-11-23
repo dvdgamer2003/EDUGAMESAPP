@@ -4,7 +4,7 @@ import { getData } from '../offline/offlineStorage';
 
 // Update this with your computer's IP address for mobile testing
 // For mobile devices, use your computer's IP address instead of localhost
-const API_BASE_URL = 'http://192.168.1.7:5000/api';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.7:5000/api';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
