@@ -81,6 +81,7 @@ const SyncScreen = ({ navigation }: any) => {
             case 'SUBMIT_GAME_RESULT': return 'Game Result';
             case 'GENERIC_SYNC': return 'Generic Data';
             case 'SYNC_XP': return 'XP Sync';
+            case 'SYNC_CHAPTER_PROGRESS': return 'Chapter Progress';
             default: return type;
         }
     };
@@ -91,6 +92,7 @@ const SyncScreen = ({ navigation }: any) => {
             case 'SUBMIT_GAME_RESULT': return 'gamepad-variant-outline';
             case 'GENERIC_SYNC': return 'sync';
             case 'SYNC_XP': return 'star-outline';
+            case 'SYNC_CHAPTER_PROGRESS': return 'book-check-outline';
             default: return 'file-document-outline';
         }
     };
@@ -101,6 +103,7 @@ const SyncScreen = ({ navigation }: any) => {
             case 'SUBMIT_GAME_RESULT': return ['#f093fb', '#f5576c'];
             case 'GENERIC_SYNC': return ['#30cfd0', '#330867'];
             case 'SYNC_XP': return ['#fa709a', '#fee140'];
+            case 'SYNC_CHAPTER_PROGRESS': return ['#43e97b', '#38f9d7'];
             default: return ['#a8edea', '#fed6e3'];
         }
     };

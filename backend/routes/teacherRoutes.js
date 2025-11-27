@@ -7,7 +7,8 @@ const {
     deleteStudent,
     assignChapter,
     getStudentAnalytics,
-    addTeacherContent
+    addTeacherContent,
+    getTeacherStats
 } = require('../controllers/teacherController');
 const { protect } = require('../middleware/auth');
 
@@ -40,5 +41,8 @@ router.route('/analytics/:studentId')
 
 router.route('/content')
     .post(addTeacherContent);
+
+router.route('/stats')
+    .get(getTeacherStats);
 
 module.exports = router;

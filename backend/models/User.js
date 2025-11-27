@@ -7,7 +7,10 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     role: { type: String, enum: ['student', 'teacher', 'admin', 'institute'], default: 'student' },
     instituteId: { type: mongoose.Schema.Types.ObjectId, ref: 'Institute', default: null },
-    status: { type: String, enum: ['active', 'disabled'], default: 'active' },
+    status: { type: String, enum: ['pending', 'active', 'rejected', 'disabled'], default: 'pending' },
+    approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    approvedAt: { type: Date, default: null },
+    rejectionReason: { type: String, default: null },
     language: { type: String, default: 'en' },
     selectedClass: { type: Number, min: 6, max: 12, default: null },
 

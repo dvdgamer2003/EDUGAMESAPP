@@ -203,6 +203,48 @@ const addTeacherContent = async (req, res) => {
     }
 };
 
+// @desc    Get teacher dashboard stats
+// @route   GET /api/teacher/stats
+// @access  Private/Teacher
+const getTeacherStats = async (req, res) => {
+    try {
+        const teacherId = req.user._id;
+
+        const totalStudents = await User.countDocuments({ role: 'student', teacherId, status: 'active' });
+
+        // Pending approvals (students waiting for this teacher)
+        // Note: Currently students are linked to teacher via teacherId. 
+        // If they are pending, they might not have teacherId set if they registered independently, 
+        // but if they selected the teacher during registration (if that flow exists) or if the teacher added them.
+        // Assuming for now we count pending students linked to this teacher.
+        const pendingApprovals = await User.countDocuments({ role: 'student', teacherId, status: 'pending' });
+
+        // Average Attendance (Placeholder logic)
+        // In a real app, you'd calculate this from an Attendance model.
+        // For now, we'll return a mock value or calculate based on 'lastActiveDate' of students.
+        const students = await User.find({ role: 'student', teacherId }).select('lastActiveDate');
+        let activeCount = 0;
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        students.forEach(s => {
+            if (s.lastActiveDate && s.lastActiveDate > oneWeekAgo) {
+                activeCount++;
+            }
+        });
+
+        const averageAttendance = students.length > 0 ? Math.round((activeCount / students.length) * 100) + '%' : '0%';
+
+        res.json({
+            totalStudents,
+            pendingApprovals,
+            averageAttendance
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createStudent,
     getStudents,
@@ -210,5 +252,6 @@ module.exports = {
     deleteStudent,
     assignChapter,
     getStudentAnalytics,
-    addTeacherContent
+    addTeacherContent,
+    getTeacherStats
 };

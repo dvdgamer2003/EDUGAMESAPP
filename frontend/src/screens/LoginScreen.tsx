@@ -141,51 +141,6 @@ const LoginScreen = ({ navigation }: any) => {
                         <BlurView intensity={Platform.OS === 'web' ? 30 : 50} tint="light" style={styles.card}>
                             <View style={styles.cardContent}>
 
-                                {/* Role Selection */}
-                                <Text style={styles.sectionLabel}>{t('login.selectRole') || 'Select Role'}</Text>
-                                <View style={styles.roleContainer}>
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.roleButton,
-                                            role === 'student' && styles.roleButtonActive
-                                        ]}
-                                        onPress={() => setRole('student')}
-                                        activeOpacity={0.8}
-                                    >
-                                        <MaterialCommunityIcons
-                                            name="account-school"
-                                            size={24}
-                                            color={role === 'student' ? '#fff' : '#333'}
-                                        />
-                                        <Text style={[
-                                            styles.roleText,
-                                            role === 'student' && styles.roleTextActive
-                                        ]}>
-                                            {t('login.student') || 'Student'}
-                                        </Text>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.roleButton,
-                                            role === 'teacher' && styles.roleButtonActive
-                                        ]}
-                                        onPress={() => setRole('teacher')}
-                                        activeOpacity={0.8}
-                                    >
-                                        <MaterialCommunityIcons
-                                            name="human-male-board"
-                                            size={24}
-                                            color={role === 'teacher' ? '#fff' : '#333'}
-                                        />
-                                        <Text style={[
-                                            styles.roleText,
-                                            role === 'teacher' && styles.roleTextActive
-                                        ]}>
-                                            {t('login.teacher') || 'Teacher'}
-                                        </Text>
-                                    </TouchableOpacity>
-                                </View>
 
                                 {/* Inputs */}
                                 <CustomInput

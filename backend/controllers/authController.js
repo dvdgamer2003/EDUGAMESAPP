@@ -6,9 +6,9 @@ const { generateToken, generateRefreshToken } = require('../utils/jwt');
 // @access  Public
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password, language } = req.body;
+        const { name, email, password, language, role } = req.body;
 
-        console.log('📝 Registration attempt:', { email, name, language });
+        console.log('📝 Registration attempt:', { email, name, language, role });
 
         const userExists = await User.findOne({ email });
 
@@ -17,22 +17,33 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
+        // Determine status based on role
+        let status = 'active';
+        if (role === 'teacher' || role === 'institute') {
+            status = 'pending';
+        }
+
         const user = await User.create({
             name,
             email,
             password,
-            language
+            language,
+            role: role || 'student',
+            status
         });
 
         if (user) {
-            console.log('✅ User registered successfully:', { id: user._id, email: user.email });
+            console.log('✅ User registered successfully:', { id: user._id, email: user.email, role: user.role, status: user.status });
+
             res.status(201).json({
                 _id: user._id,
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                status: user.status,
                 token: generateToken(user._id),
-                refreshToken: generateRefreshToken(user._id)
+                refreshToken: generateRefreshToken(user._id),
+                message: status === 'pending' ? 'Registration successful. Please wait for approval.' : 'Registration successful'
             });
         } else {
             console.log('❌ Failed to create user - invalid data');
@@ -71,6 +82,7 @@ const loginUser = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                status: user.status,
                 selectedClass: user.selectedClass,
                 xp: user.xp,
                 streak: user.streak,
@@ -143,6 +155,7 @@ const updateProfile = async (req, res) => {
                 name: updatedUser.name,
                 email: updatedUser.email,
                 role: updatedUser.role,
+                status: updatedUser.status,
                 selectedClass: updatedUser.selectedClass,
                 xp: updatedUser.xp,
                 streak: updatedUser.streak,

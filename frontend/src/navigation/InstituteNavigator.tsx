@@ -8,6 +8,8 @@ import InstituteAnalyticsScreen from '../screens/institute/InstituteAnalyticsScr
 import SyllabusAssignScreen from '../screens/institute/SyllabusAssignScreen';
 import ContentUploadScreen from '../screens/institute/ContentUploadScreen';
 import QuizManagerScreen from '../screens/institute/QuizManagerScreen';
+import InstituteDashboardScreen from '../screens/InstituteDashboardScreen';
+import NotificationScreen from '../screens/NotificationScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +24,8 @@ const InstituteNavigator = () => {
             <Stack.Screen name="SyllabusAssign" component={SyllabusAssignScreen} />
             <Stack.Screen name="ContentUpload" component={ContentUploadScreen} />
             <Stack.Screen name="QuizManager" component={QuizManagerScreen} />
+            <Stack.Screen name="InstituteApprovals" component={InstituteDashboardScreen} />
+            <Stack.Screen name="Notifications" component={NotificationScreen} />
         </Stack.Navigator>
     );
 };

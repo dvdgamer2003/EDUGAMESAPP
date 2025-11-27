@@ -51,7 +51,8 @@ const ChapterListScreen = ({ route, navigation }: any) => {
         useEffect(() => {
             const loadProgress = async () => {
                 const chapterProgress = await progressService.getChapterProgress(item._id);
-                setProgress(chapterProgress);
+                // Set progress to 1 (100%) if completed, otherwise 0
+                setProgress(chapterProgress?.completed ? 1 : 0);
             };
             loadProgress();
         }, [item._id]);
@@ -121,11 +122,18 @@ const ChapterListScreen = ({ route, navigation }: any) => {
                                         e.stopPropagation();
                                         try {
                                             const chapterContent = await learnService.getChapterContent(item._id);
+                                            console.log('[ChapterList] Opening lesson:', {
+                                                chapterId: item._id,
+                                                subjectId,
+                                                title: item.name
+                                            });
                                             navigation.navigate('LessonReader', {
                                                 title: item.name,
                                                 content: chapterContent.combinedContent,
                                                 xpReward: 20,
-                                                chapterId: item._id
+                                                chapterId: item._id,
+                                                subjectId: subjectId,
+                                                classId: route.params.classId || 'class-6', // Get from route or default
                                             });
                                         } catch (error) {
                                             console.error('Error loading chapter content:', error);

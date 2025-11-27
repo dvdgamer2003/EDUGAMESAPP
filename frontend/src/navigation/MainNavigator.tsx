@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -8,6 +7,8 @@ import CustomTabBar from '../components/navigation/CustomTabBar';
 import HomeScreen from '../screens/HomeScreen';
 import GamesScreen from '../screens/GamesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import NotificationScreen from '../screens/NotificationScreen';
+import StudentAnalyticsScreen from '../screens/StudentAnalyticsScreen';
 import LearnNavigator from './LearnNavigator';
 
 // Import game screens
@@ -27,6 +28,7 @@ import SyncScreen from '../screens/SyncScreen';
 import TeacherDashboard from '../screens/TeacherDashboard';
 import LeaderboardScreen from '../screens/LeaderboardScreen';
 import ScienceScreen from '../screens/ScienceScreen';
+import QuizScreen from '../screens/QuizScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -71,6 +73,9 @@ const MainNavigator = () => {
             <Stack.Screen name="TeacherDashboard" component={TeacherDashboard} />
             <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
             <Stack.Screen name="Science" component={ScienceScreen} />
+            <Stack.Screen name="Quiz" component={QuizScreen} />
+            <Stack.Screen name="Notifications" component={NotificationScreen} />
+            <Stack.Screen name="StudentAnalytics" component={StudentAnalyticsScreen} />
         </Stack.Navigator>
     );
 };

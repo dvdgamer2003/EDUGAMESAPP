@@ -6,7 +6,7 @@ const QUEUE_KEY = 'sync_queue';
 
 export interface QueueItem {
     id: string;
-    type: 'SUBMIT_QUIZ_RESULT' | 'SUBMIT_GAME_RESULT' | 'GENERIC_SYNC' | 'SYNC_XP';
+    type: 'SUBMIT_QUIZ_RESULT' | 'SUBMIT_GAME_RESULT' | 'GENERIC_SYNC' | 'SYNC_XP' | 'SYNC_CHAPTER_PROGRESS';
     data: any;
     timestamp: number;
     retryCount: number;

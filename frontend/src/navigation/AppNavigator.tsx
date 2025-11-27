@@ -8,6 +8,7 @@ import InstituteNavigator from './InstituteNavigator';
 import TeacherNavigator from './TeacherNavigator';
 import { ActivityIndicator, View } from 'react-native';
 import LevelUpPopup from '../components/ui/LevelUpPopup';
+import PendingApprovalScreen from '../screens/PendingApprovalScreen';
 
 const AppNavigator = () => {
     const { user, isLoading } = useAuth();
@@ -23,10 +24,11 @@ const AppNavigator = () => {
     return (
         <NavigationContainer>
             {user ? (
-                user.role === 'admin' ? <AdminNavigator /> :
-                    user.role === 'institute' ? <InstituteNavigator /> :
-                        user.role === 'teacher' ? <TeacherNavigator /> :
-                            <MainNavigator />
+                user.status === 'pending' ? <PendingApprovalScreen /> :
+                    user.role === 'admin' ? <AdminNavigator /> :
+                        user.role === 'institute' ? <InstituteNavigator /> :
+                            user.role === 'teacher' ? <TeacherNavigator /> :
+                                <MainNavigator />
             ) : (
                 <AuthNavigator />
             )}

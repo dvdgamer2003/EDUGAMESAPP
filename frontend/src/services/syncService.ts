@@ -18,6 +18,9 @@ export const syncItem = async (item: QueueItem): Promise<void> => {
         case 'SYNC_XP':
             await syncXP(item.data);
             break;
+        case 'SYNC_CHAPTER_PROGRESS':
+            await syncChapterProgress(item.data);
+            break;
         default:
             throw new Error(`Unknown sync type: ${item.type}`);
     }
@@ -66,4 +69,24 @@ const syncXP = async (data: { amount: number, source: string }): Promise<void> =
     // await api.post('/xp/add', data);
     console.log('[SyncService] Syncing XP:', data);
     await new Promise((resolve) => setTimeout(resolve, 500));
+};
+
+/**
+ * Sync chapter progress to backend
+ */
+const syncChapterProgress = async (data: {
+    chapterId: string;
+    subjectId: string;
+    classId: string;
+    completed: boolean;
+    completedAt?: string;
+}): Promise<void> => {
+    try {
+        console.log('[SyncService] Syncing chapter progress:', data);
+        await api.post('/progress/chapter', data);
+        console.log('[SyncService] Chapter progress synced successfully');
+    } catch (error) {
+        console.error('[SyncService] Failed to sync chapter progress:', error);
+        throw error;
+    }
 };

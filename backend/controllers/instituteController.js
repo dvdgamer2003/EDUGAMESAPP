@@ -146,9 +146,16 @@ const getInstituteAnalytics = async (req, res) => {
             .slice(0, 3)
             .map(([grade]) => `Class ${grade}`);
 
+        const pendingApprovals = await User.countDocuments({
+            role: { $in: ['teacher', 'student'] },
+            instituteId,
+            status: 'pending'
+        });
+
         res.json({
             totalTeachers,
             totalStudents,
+            pendingApprovals,
             avgQuizScore,
             chapterCompletionRate,
             mostActiveGrades

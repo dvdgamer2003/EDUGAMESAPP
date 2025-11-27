@@ -22,7 +22,7 @@ interface Badge {
     gradient: readonly [string, string];
 }
 
-const RewardsScreen = () => {
+const RewardsScreen = ({ navigation }: any) => {
     const theme = useTheme();
     const { xp, streak } = useAuth();
     const { containerStyle } = useResponsive();
@@ -81,12 +81,18 @@ const RewardsScreen = () => {
                 <View style={[styles.decorativeCircle, { bottom: -20, left: -20, width: 80, height: 80 }]} />
 
                 <Animated.View entering={FadeIn.duration(600)} style={styles.headerContent}>
-                    <Text variant="headlineLarge" style={styles.screenTitle}>
-                        Rewards & Progress
-                    </Text>
-                    <Text style={styles.headerSubtitle}>
-                        Track your achievements and level up!
-                    </Text>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
+                    </TouchableOpacity>
+                    <View style={styles.headerTitleContainer}>
+                        <Text variant="headlineLarge" style={styles.screenTitle}>
+                            Rewards & Progress
+                        </Text>
+                        <Text style={styles.headerSubtitle}>
+                            Track your achievements and level up!
+                        </Text>
+                    </View>
+                    <View style={{ width: 48 }} />
                 </Animated.View>
             </LinearGradient>
 
@@ -283,8 +289,24 @@ const styles = StyleSheet.create({
         borderRadius: 1000,
     },
     headerContent: {
+        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         paddingVertical: spacing.md,
+    },
+    backButton: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1.5,
+        borderColor: 'rgba(255,255,255,0.3)',
+    },
+    headerTitleContainer: {
+        flex: 1,
+        alignItems: 'center',
     },
     screenTitle: {
         fontWeight: '900',

@@ -15,7 +15,7 @@ interface AuthContextType {
     level: number;
     showLevelUp: boolean;
     closeLevelUp: () => void;
-    login: (email: string, password: string, role: 'student' | 'teacher') => Promise<void>;
+    login: (email: string, password: string) => Promise<void>;
     register: (userData: any) => Promise<void>;
     loginAsGuest: () => Promise<void>;
     logout: () => Promise<void>;
@@ -131,14 +131,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
 
-    const login = async (email: string, password: string, role: 'student' | 'teacher') => {
+    const login = async (email: string, password: string) => {
         try {
-            // Call the real backend API
-            const response = await api.post(ENDPOINTS.LOGIN, { email, password, role });
+            // Call the real backend API - role determined by backend from database
+            const response = await api.post(ENDPOINTS.LOGIN, { email, password });
 
-            const { _id, name, email: userEmail, role: userRole, xp: userXp, streak: userStreak, token: authToken } = response.data;
+            const { _id, name, email: userEmail, role: userRole, status: userStatus, xp: userXp, streak: userStreak, token: authToken } = response.data;
 
-            const userData = { _id, name, email: userEmail, role: userRole };
+            const userData = { _id, name, email: userEmail, role: userRole, status: userStatus };
 
             setUser(userData);
             setToken(authToken);
@@ -176,9 +176,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 hasToken: !!response.data?.token
             });
 
-            const { _id, name, email, role, token: authToken } = response.data;
+            const { _id, name, email, role, status, token: authToken } = response.data;
 
-            const userDataObj = { _id, name, email, role };
+            const userDataObj = { _id, name, email, role, status };
 
             setUser(userDataObj);
             setToken(authToken);

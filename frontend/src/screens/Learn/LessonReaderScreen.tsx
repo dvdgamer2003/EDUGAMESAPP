@@ -14,7 +14,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { progressService } from '../../services/progressService';
 
 const LessonReaderScreen = ({ route, navigation }: any) => {
-    const { title, content, xpReward = 10, chapterId } = route.params;
+    const { title, content, xpReward = 10, chapterId, subjectId, classId } = route.params;
     const theme = useTheme();
     const { isDark } = useAppTheme();
     const { addXP } = useAuth();
@@ -26,13 +26,16 @@ const LessonReaderScreen = ({ route, navigation }: any) => {
 
     const handleComplete = async () => {
         if (!completed) {
-            addXP(xpReward);
+            addXP(xpReward, 'lesson_complete');
             setCompleted(true);
             setShowToast(true);
 
-            // Mark chapter as complete if chapterId is provided
-            if (chapterId) {
-                await progressService.markChapterComplete(chapterId);
+            // Mark chapter as complete if all IDs are provided
+            if (chapterId && subjectId && classId) {
+                console.log('[LessonReader] Marking chapter complete:', { chapterId, subjectId, classId });
+                await progressService.markChapterComplete(chapterId, subjectId, classId);
+            } else {
+                console.warn('[LessonReader] Missing IDs for progress tracking:', { chapterId, subjectId, classId });
             }
 
             // Navigate back after a delay

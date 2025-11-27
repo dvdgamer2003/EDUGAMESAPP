@@ -1,30 +1,82 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import GradientBackground from '../../components/ui/GradientBackground';
 import CustomCard from '../../components/ui/CustomCard';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../services/api';
 
 const AdminHomeScreen = () => {
     const navigation = useNavigation();
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
+    const [stats, setStats] = useState({
+        totalInstitutes: 0,
+        totalUsers: 0,
+        pendingApprovals: 0
+    });
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const response = await api.get('/admin/analytics');
+                setStats({
+                    totalInstitutes: response.data.totalInstitutes,
+                    totalUsers: response.data.totalStudents + response.data.totalTeachers, // Sum of students and teachers
+                    pendingApprovals: response.data.pendingApprovals
+                });
+            } catch (error) {
+                console.error('Failed to fetch admin stats:', error);
+            }
+        };
+
+        fetchStats();
+    }, []);
 
     const menuItems = [
-        { title: 'Institutes', icon: 'school', screen: 'InstituteList', color: '#4F46E5' },
-        { title: 'Analytics', icon: 'bar-chart', screen: 'GlobalAnalytics', color: '#10B981' },
-        { title: 'Syllabus', icon: 'book', screen: 'GlobalSyllabusManager', color: '#F59E0B' },
-        { title: 'Quiz Bank', icon: 'help-circle', screen: 'QuizBankManager', color: '#EC4899' },
+        { title: 'Approvals', icon: 'checkmark-circle', screen: 'AdminApprovals', color: '#8B5CF6', badge: stats.pendingApprovals },
+        { title: 'Institutes', icon: 'business', screen: 'InstituteList', color: '#4F46E5' },
+        { title: 'Global Syllabus', icon: 'globe', screen: 'GlobalSyllabusManager', color: '#10B981' },
+        { title: 'Quiz Bank', icon: 'library', screen: 'QuizBankManager', color: '#F59E0B' },
+        { title: 'System Settings', icon: 'settings', screen: 'SystemSettings', color: '#6B7280' },
     ];
 
     return (
         <GradientBackground>
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.header}>
-                    <Text style={styles.title}>Admin Dashboard</Text>
-                    <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-                        <Ionicons name="log-out-outline" size={24} color="#EF4444" />
-                    </TouchableOpacity>
+                    <View>
+                        <Text style={styles.title}>Admin Dashboard</Text>
+                        <Text style={styles.subtitle}>Welcome, {user?.name}</Text>
+                    </View>
+                    <View style={styles.headerActions}>
+                        <TouchableOpacity
+                            onPress={() => (navigation as any).navigate('Notifications')}
+                            style={styles.iconButton}
+                        >
+                            <Ionicons name="notifications-outline" size={24} color="#fff" />
+                            <View style={styles.notificationBadge} />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={logout} style={styles.iconButton}>
+                            <Ionicons name="log-out-outline" size={24} color="#EF4444" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Quick Stats Row */}
+                <View style={styles.statsRow}>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statValue}>{stats.totalInstitutes}</Text>
+                        <Text style={styles.statLabel}>Institutes</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statValue}>{stats.totalUsers}</Text>
+                        <Text style={styles.statLabel}>Users</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statValue}>{stats.pendingApprovals}</Text>
+                        <Text style={styles.statLabel}>Pending</Text>
+                    </View>
                 </View>
 
                 <View style={styles.grid}>
@@ -32,13 +84,18 @@ const AdminHomeScreen = () => {
                         <TouchableOpacity
                             key={index}
                             style={styles.cardWrapper}
-                            onPress={() => navigation.navigate(item.screen as never)}
+                            onPress={() => (navigation as any).navigate(item.screen)}
                         >
                             <CustomCard style={styles.card}>
                                 <View style={[styles.iconContainer, { backgroundColor: item.color + '20' }]}>
                                     <Ionicons name={item.icon as any} size={32} color={item.color} />
                                 </View>
                                 <Text style={styles.cardTitle}>{item.title}</Text>
+                                {item.badge ? (
+                                    <View style={styles.cardBadge}>
+                                        <Text style={styles.cardBadgeText}>{item.badge}</Text>
+                                    </View>
+                                ) : null}
                             </CustomCard>
                         </TouchableOpacity>
                     ))}
@@ -57,17 +114,58 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 30,
+        marginBottom: 20,
+    },
+    headerActions: {
+        flexDirection: 'row',
+        gap: 10,
     },
     title: {
         fontSize: 28,
         fontWeight: 'bold',
         color: '#fff',
     },
-    logoutButton: {
+    subtitle: {
+        fontSize: 16,
+        color: '#E5E7EB',
+        marginTop: 4,
+    },
+    iconButton: {
         padding: 10,
         backgroundColor: 'rgba(255,255,255,0.1)',
         borderRadius: 12,
+        position: 'relative',
+    },
+    notificationBadge: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#EF4444',
+    },
+    statsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 30,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderRadius: 16,
+        padding: 15,
+    },
+    statItem: {
+        alignItems: 'center',
+        flex: 1,
+    },
+    statValue: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    statLabel: {
+        fontSize: 12,
+        color: '#E5E7EB',
+        marginTop: 2,
     },
     grid: {
         flexDirection: 'row',
@@ -83,6 +181,7 @@ const styles = StyleSheet.create({
         padding: 20,
         height: 150,
         justifyContent: 'center',
+        position: 'relative',
     },
     iconContainer: {
         width: 60,
@@ -96,6 +195,21 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: '#1F2937',
+        textAlign: 'center',
+    },
+    cardBadge: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        backgroundColor: '#EF4444',
+        borderRadius: 10,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+    },
+    cardBadgeText: {
+        color: '#fff',
+        fontSize: 10,
+        fontWeight: 'bold',
     },
 });
 

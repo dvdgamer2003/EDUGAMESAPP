@@ -104,13 +104,16 @@ const getGlobalAnalytics = async (req, res) => {
         const yesterday = new Date(new Date().setDate(new Date().getDate() - 1));
         const dailyActiveUsers = await User.countDocuments({ lastActiveDate: { $gte: yesterday } });
 
+        const pendingApprovals = await User.countDocuments({ status: 'pending' });
+
         res.json({
             totalInstitutes,
             totalTeachers,
             totalStudents,
             totalQuizzesTaken,
             totalLessonsCompleted,
-            dailyActiveUsers
+            dailyActiveUsers,
+            pendingApprovals
         });
     } catch (error) {
         res.status(500).json({ message: error.message });

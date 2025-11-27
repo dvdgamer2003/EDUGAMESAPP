@@ -24,6 +24,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/user', require('./routes/user'));
 app.use('/api/learn', require('./routes/learn'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/institute', require('./routes/instituteRoutes'));
@@ -35,6 +36,10 @@ app.use('/api/science', require('./routes/science'));
 app.use('/api/sync', require('./routes/sync'));
 app.use('/api/xp', require('./routes/xpRoutes'));
 app.use('/api/streak', require('./routes/streakRoutes'));
+app.use('/api/progress', require('./routes/progress'));
+app.use('/api/approval', require('./routes/approval'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
+app.use('/api/analytics', require('./routes/analyticsRoutes'));
 
 // Base route
 app.get('/', (req, res) => {

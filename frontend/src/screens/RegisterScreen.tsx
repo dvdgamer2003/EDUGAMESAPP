@@ -36,6 +36,7 @@ const RegisterScreen = ({ navigation }: any) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState<'student' | 'teacher' | 'admin' | 'institute'>('student');
     const [selectedLanguage, setSelectedLanguage] = useState(language);
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -168,6 +169,42 @@ const RegisterScreen = ({ navigation }: any) => {
                                     onRightIconPress={() => setShowPassword(!showPassword)}
                                 />
 
+                                {/* Role Selection */}
+                                <Text style={styles.sectionLabel}>Who are you?</Text>
+                                <View style={styles.roleDropdownContainer}>
+                                    {[
+                                        { value: 'student', label: 'Student', icon: 'account-school' },
+                                        { value: 'teacher', label: 'Teacher', icon: 'human-male-board' },
+                                        { value: 'institute', label: 'Institute', icon: 'office-building' },
+                                        { value: 'admin', label: 'Admin', icon: 'shield-account' },
+                                    ].map((option) => (
+                                        <TouchableOpacity
+                                            key={option.value}
+                                            style={[
+                                                styles.roleOption,
+                                                role === option.value && styles.roleOptionActive
+                                            ]}
+                                            onPress={() => setRole(option.value as any)}
+                                            activeOpacity={0.7}
+                                        >
+                                            <MaterialCommunityIcons
+                                                name={option.icon as any}
+                                                size={24}
+                                                color={role === option.value ? '#fff' : '#666'}
+                                            />
+                                            <Text style={[
+                                                styles.roleOptionText,
+                                                role === option.value && styles.roleOptionTextActive
+                                            ]}>
+                                                {option.label}
+                                            </Text>
+                                            {role === option.value && (
+                                                <MaterialCommunityIcons name="check-circle" size={20} color="#fff" />
+                                            )}
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+
                                 {/* Language Selection */}
                                 <Text style={styles.sectionLabel}>{t('register.selectLanguage') || 'Select Language'}</Text>
                                 <View style={styles.languageContainer}>
@@ -297,6 +334,33 @@ const styles = StyleSheet.create({
         color: '#333',
         marginBottom: spacing.sm,
         marginLeft: spacing.xs,
+    },
+    roleDropdownContainer: {
+        gap: spacing.sm,
+        marginBottom: spacing.lg,
+    },
+    roleOption: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: spacing.md,
+        borderRadius: borderRadius.md,
+        backgroundColor: '#f5f5f5',
+        borderWidth: 2,
+        borderColor: '#e0e0e0',
+        gap: spacing.sm,
+    },
+    roleOptionActive: {
+        backgroundColor: '#3b5998',
+        borderColor: '#3b5998',
+    },
+    roleOptionText: {
+        flex: 1,
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333',
+    },
+    roleOptionTextActive: {
+        color: '#fff',
     },
     languageContainer: {
         flexDirection: 'row',
