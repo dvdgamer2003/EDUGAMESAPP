@@ -187,6 +187,40 @@ const ProfileScreen = ({ navigation }: any) => {
                                     outlineColor={isDark ? '#475569' : '#E2E8F0'}
                                     activeOutlineColor={isDark ? '#60A5FA' : '#2563EB'}
                                 />
+
+                                {/* Class Selection */}
+                                <View style={styles.classSelectionContainer}>
+                                    <Text variant="titleMedium" style={styles.sectionLabel}>
+                                        Select Your Class (6-12)
+                                    </Text>
+                                    <View style={styles.classButtonsContainer}>
+                                        {[6, 7, 8, 9, 10, 11, 12].map((classNum) => (
+                                            <TouchableOpacity
+                                                key={classNum}
+                                                onPress={() => isEditing && setSelectedClass(classNum)}
+                                                disabled={!isEditing}
+                                                style={[
+                                                    styles.classButton,
+                                                    selectedClass === classNum && styles.classButtonSelected,
+                                                    !isEditing && styles.classButtonDisabled
+                                                ]}
+                                                activeOpacity={0.7}
+                                            >
+                                                <Text style={[
+                                                    styles.classButtonText,
+                                                    selectedClass === classNum && styles.classButtonTextSelected
+                                                ]}>
+                                                    {classNum}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                    {selectedClass && (
+                                        <Text variant="bodySmall" style={styles.selectedClassText}>
+                                            Selected: Class {selectedClass}
+                                        </Text>
+                                    )}
+                                </View>
                             </View>
 
                             {/* Action Buttons */}
@@ -216,6 +250,7 @@ const ProfileScreen = ({ navigation }: any) => {
                                                 setIsEditing(false);
                                                 setName(user?.name || '');
                                                 setEmail(user?.email || '');
+                                                setSelectedClass(user?.selectedClass || null);
                                             }}
                                         >
                                             Cancel
@@ -482,6 +517,50 @@ const createStyles = (isDark: boolean) => StyleSheet.create({
     formContainer: {
         gap: spacing.lg,
         marginBottom: spacing.xl,
+    },
+    classSelectionContainer: {
+        paddingTop: spacing.md,
+    },
+    sectionLabel: {
+        marginBottom: spacing.md,
+        fontWeight: '600',
+        color: isDark ? '#F1F5F9' : '#1A1A1A',
+    },
+    classButtonsContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: spacing.sm,
+        marginBottom: spacing.sm,
+    },
+    classButton: {
+        width: 50,
+        height: 50,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: isDark ? '#475569' : '#E2E8F0',
+        backgroundColor: isDark ? '#0F172A' : '#F8F9FA',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    classButtonSelected: {
+        borderColor: '#2563EB',
+        backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : 'rgba(37, 99, 235, 0.1)',
+    },
+    classButtonDisabled: {
+        opacity: 0.6,
+    },
+    classButtonText: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: isDark ? '#CBD5E1' : '#475569',
+    },
+    classButtonTextSelected: {
+        color: '#2563EB',
+    },
+    selectedClassText: {
+        color: isDark ? '#60A5FA' : '#2563EB',
+        fontWeight: '600',
+        marginTop: spacing.xs,
     },
     input: {
         backgroundColor: isDark ? '#0F172A' : '#F8F9FA',

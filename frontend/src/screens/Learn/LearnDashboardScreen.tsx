@@ -31,16 +31,26 @@ const LearnDashboardScreen = ({ navigation }: any) => {
     // Desktop version continues below
     const [subjects, setSubjects] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedClass, setSelectedClass] = useState<number | null>(user?.class || 6);
+    const [selectedClass, setSelectedClass] = useState<number | null>(user?.selectedClass || null);
     const [filter, setFilter] = useState('All');
 
     const styles = createStyles(isDark);
 
     useEffect(() => {
-        loadSubjects();
+        if (user?.selectedClass) {
+            setSelectedClass(user.selectedClass);
+        }
+    }, [user?.selectedClass]);
+
+    useEffect(() => {
+        if (selectedClass) {
+            loadSubjects();
+        }
     }, [selectedClass]);
 
     const loadSubjects = async () => {
+        if (!selectedClass) return;
+
         setLoading(true);
         try {
             const classesData = await learnService.getClasses();
@@ -62,9 +72,12 @@ const LearnDashboardScreen = ({ navigation }: any) => {
                 }));
 
                 setSubjects(subjectsWithProgress);
+            } else {
+                setSubjects([]);
             }
         } catch (error) {
             console.error(error);
+            setSubjects([]);
         } finally {
             setLoading(false);
         }
@@ -162,6 +175,47 @@ const LearnDashboardScreen = ({ navigation }: any) => {
         );
     };
 
+    // If no class selected, show prompt
+    if (!selectedClass) {
+        return (
+            <View style={styles.container}>
+                <StatusBar barStyle="light-content" backgroundColor="#6A5AE0" />
+                <LinearGradient
+                    colors={['#6A5AE0', '#8B7AFF']}
+                    style={[styles.headerBackground, { paddingTop: insets.top + spacing.md, paddingBottom: 40 }]}
+                >
+                    {renderHeader()}
+                </LinearGradient>
+
+                <View style={[styles.contentContainer, { justifyContent: 'center', alignItems: 'center', padding: spacing.xl }]}>
+                    <MaterialCommunityIcons name="school-outline" size={80} color={isDark ? '#475569' : '#CBD5E1'} />
+                    <Text variant="headlineSmall" style={{ marginTop: spacing.lg, textAlign: 'center', fontWeight: 'bold', color: isDark ? '#F1F5F9' : '#1A1A1A' }}>
+                        Select Your Class
+                    </Text>
+                    <Text variant="bodyLarge" style={{ marginTop: spacing.sm, textAlign: 'center', color: isDark ? '#94A3B8' : '#64748B', marginBottom: spacing.xl }}>
+                        Please select your class in your profile to see relevant subjects and content.
+                    </Text>
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('Profile')}
+                        style={{
+                            backgroundColor: '#6A5AE0',
+                            paddingHorizontal: spacing.xl,
+                            paddingVertical: spacing.md,
+                            borderRadius: 12,
+                            elevation: 4,
+                            shadowColor: '#6A5AE0',
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 8,
+                        }}
+                    >
+                        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Go to Profile</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#6A5AE0" />
@@ -216,8 +270,8 @@ const LearnDashboardScreen = ({ navigation }: any) => {
 
                     {/* My Subjects Section */}
                     <View style={styles.sectionHeader}>
-                        <Text variant="titleLarge" style={styles.sectionTitle}>My Subjects</Text>
-                        <TouchableOpacity onPress={() => navigation.navigate('ClassSelection')}>
+                        <Text variant="titleLarge" style={styles.sectionTitle}>Class {selectedClass} Subjects</Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
                             <Text variant="bodyMedium" style={styles.changeClassText}>Change Class</Text>
                         </TouchableOpacity>
                     </View>

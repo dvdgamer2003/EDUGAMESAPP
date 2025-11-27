@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { Text, Button, Chip, useTheme, IconButton, Surface } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Platform } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Animated, { FadeInDown, ZoomIn, useAnimatedStyle, withRepeat, withTiming, useSharedValue, Easing } from 'react-native-reanimated';
+import Animated, { FadeInDown, ZoomIn, useAnimatedStyle, withRepeat, withTiming, useSharedValue, Easing, FadeIn } from 'react-native-reanimated';
 import { useSync } from '../context/SyncContext';
-import { getQueueItems, clearQueue, QueueItem } from '../offline/syncQueue';
+import { getQueueItems, clearQueue, QueueItem, subscribeToQueue } from '../offline/syncQueue';
 import { spacing } from '../theme';
 import { useResponsive } from '../hooks/useResponsive';
 
 const SyncScreen = ({ navigation }: any) => {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
-    const { isSyncing, isOffline, syncNow } = useSync();
+    const { isSyncing, isOffline, pendingItems, syncNow } = useSync();
     const [queueItems, setQueueItems] = useState<QueueItem[]>([]);
     const [refreshing, setRefreshing] = useState(false);
     const { containerStyle } = useResponsive();
 
-    // Animation for sync icon
     const rotation = useSharedValue(0);
 
     useEffect(() => {
@@ -45,7 +44,20 @@ const SyncScreen = ({ navigation }: any) => {
 
     useEffect(() => {
         loadQueueItems();
-    }, [isSyncing]); // Reload when sync status changes
+
+        const unsubscribe = subscribeToQueue((items) => {
+            setQueueItems(items);
+            console.log('[SyncScreen] Queue updated:', items.length, 'items');
+        });
+
+        return () => {
+            unsubscribe();
+        };
+    }, []);
+
+    useEffect(() => {
+        loadQueueItems();
+    }, [isSyncing]);
 
     const handleManualSync = async () => {
         await syncNow();
@@ -68,6 +80,7 @@ const SyncScreen = ({ navigation }: any) => {
             case 'SUBMIT_QUIZ_RESULT': return 'Quiz Result';
             case 'SUBMIT_GAME_RESULT': return 'Game Result';
             case 'GENERIC_SYNC': return 'Generic Data';
+            case 'SYNC_XP': return 'XP Sync';
             default: return type;
         }
     };
@@ -77,127 +90,170 @@ const SyncScreen = ({ navigation }: any) => {
             case 'SUBMIT_QUIZ_RESULT': return 'school-outline';
             case 'SUBMIT_GAME_RESULT': return 'gamepad-variant-outline';
             case 'GENERIC_SYNC': return 'sync';
+            case 'SYNC_XP': return 'star-outline';
             default: return 'file-document-outline';
+        }
+    };
+
+    const getTypeGradient = (type: QueueItem['type']): readonly [string, string] => {
+        switch (type) {
+            case 'SUBMIT_QUIZ_RESULT': return ['#667eea', '#764ba2'];
+            case 'SUBMIT_GAME_RESULT': return ['#f093fb', '#f5576c'];
+            case 'GENERIC_SYNC': return ['#30cfd0', '#330867'];
+            case 'SYNC_XP': return ['#fa709a', '#fee140'];
+            default: return ['#a8edea', '#fed6e3'];
         }
     };
 
     const retryCount = queueItems.filter((item) => item.retryCount > 0).length;
 
     return (
-        <View style={[styles.container, { backgroundColor: '#f5f5f5' }]}>
-            <ScrollView
-                contentContainerStyle={[styles.content, containerStyle, { paddingTop: insets.top }]}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
-                showsVerticalScrollIndicator={false}
+        <View style={styles.container}>
+            <LinearGradient
+                colors={isOffline ? ['#FF6B6B', '#FF8E53'] : ['#4CAF50', '#66BB6A', '#81C784']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.header, { paddingTop: insets.top + 16 }]}
             >
-                {/* Header */}
-                <LinearGradient
-                    colors={['#4c669f', '#3b5998', '#192f6a']}
-                    style={styles.header}
-                >
-                    <View style={styles.headerContent}>
-                        <IconButton
-                            icon="arrow-left"
-                            iconColor="#fff"
-                            size={24}
-                            onPress={() => navigation.goBack()}
-                        />
-                        <Text variant="headlineSmall" style={styles.headerTitle}>
+                <View style={[styles.decorativeCircle, { top: -40, right: -30, width: 120, height: 120 }]} />
+                <View style={[styles.decorativeCircle, { bottom: -20, left: -20, width: 80, height: 80 }]} />
+
+                <Animated.View entering={FadeIn.duration(600)} style={styles.headerContent}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
+                    </TouchableOpacity>
+                    <View style={styles.headerTitleContainer}>
+                        <Text variant="headlineLarge" style={styles.screenTitle}>
                             Sync Status
                         </Text>
-                        <View style={{ width: 48 }} />
+                        <Text style={styles.headerSubtitle}>
+                            {isOffline ? 'Offline Mode' : 'Connected & Synced'}
+                        </Text>
                     </View>
-                </LinearGradient>
+                    <View style={{ width: 48 }} />
+                </Animated.View>
+            </LinearGradient>
 
-                {/* Status Card */}
+            <ScrollView
+                contentContainerStyle={[styles.content, containerStyle]}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
+                showsVerticalScrollIndicator={false}
+                style={{ marginTop: -40 }}
+            >
                 <Animated.View entering={FadeInDown.delay(100).duration(600)}>
-                    <Surface style={styles.statusCard} elevation={4}>
-                        <LinearGradient
-                            colors={isOffline ? ['#FF5252', '#D32F2F'] : ['#4CAF50', '#2E7D32']}
-                            style={styles.statusGradient}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 0 }}
-                        >
-                            <View style={styles.statusRow}>
-                                <Animated.View style={isSyncing ? animatedIconStyle : {}}>
+                    <LinearGradient
+                        colors={isOffline
+                            ? ['rgba(255, 107, 107, 0.95)', 'rgba(255, 142, 83, 0.85)']
+                            : ['rgba(76, 175, 80, 0.95)', 'rgba(102, 187, 106, 0.85)']
+                        }
+                        style={styles.statusCard}
+                    >
+                        <View style={styles.statusRow}>
+                            <Animated.View style={isSyncing ? animatedIconStyle : {}}>
+                                <View style={styles.statusIconContainer}>
                                     <MaterialCommunityIcons
-                                        name={isSyncing ? 'loading' : (isOffline ? 'cloud-off-outline' : 'cloud-check-outline')}
-                                        size={40}
+                                        name={isSyncing ? 'sync' : (isOffline ? 'cloud-off-outline' : 'cloud-check-outline')}
+                                        size={48}
                                         color="#fff"
                                     />
-                                </Animated.View>
-                                <View style={styles.statusTextContainer}>
-                                    <Text variant="titleLarge" style={styles.statusTitle}>
-                                        {isSyncing ? 'Syncing...' : (isOffline ? 'Offline Mode' : 'Online & Synced')}
-                                    </Text>
-                                    <Text variant="bodyMedium" style={styles.statusSubtitle}>
-                                        {isSyncing
-                                            ? 'Uploading your progress...'
-                                            : (isOffline ? 'Changes will sync when online' : 'Your data is up to date')}
-                                    </Text>
                                 </View>
+                            </Animated.View>
+                            <View style={styles.statusTextContainer}>
+                                <Text variant="headlineSmall" style={styles.statusTitle}>
+                                    {isSyncing ? 'Syncing...' : (isOffline ? 'Offline Mode' : 'All Synced')}
+                                </Text>
+                                <Text variant="bodyMedium" style={styles.statusSubtitle}>
+                                    {isSyncing
+                                        ? 'Uploading your progress...'
+                                        : (isOffline ? 'Changes will sync when online' : 'Your data is up to date')}
+                                </Text>
                             </View>
-                        </LinearGradient>
-                    </Surface>
+                        </View>
+                    </LinearGradient>
                 </Animated.View>
 
-                {/* Stats Grid */}
                 <View style={styles.statsGrid}>
                     <Animated.View entering={FadeInDown.delay(200).duration(600)} style={styles.statCol}>
-                        <Surface style={styles.statCard} elevation={2}>
-                            <Text variant="displayMedium" style={{ color: theme.colors.primary, fontWeight: 'bold' }}>
-                                {queueItems.length}
-                            </Text>
-                            <Text variant="bodyMedium" style={styles.statLabel}>Pending Items</Text>
-                        </Surface>
+                        <LinearGradient
+                            colors={['#667eea', '#764ba2']}
+                            style={styles.statCard}
+                        >
+                            <MaterialCommunityIcons name="clock-outline" size={32} color="#fff" />
+                            <Text style={styles.statNumber}>{queueItems.length}</Text>
+                            <Text style={styles.statLabel}>Pending Items</Text>
+                        </LinearGradient>
                     </Animated.View>
 
                     <Animated.View entering={FadeInDown.delay(300).duration(600)} style={styles.statCol}>
-                        <Surface style={styles.statCard} elevation={2}>
-                            <Text variant="displayMedium" style={{ color: retryCount > 0 ? '#FF9800' : theme.colors.secondary, fontWeight: 'bold' }}>
-                                {retryCount}
-                            </Text>
-                            <Text variant="bodyMedium" style={styles.statLabel}>Retrying</Text>
-                        </Surface>
+                        <LinearGradient
+                            colors={retryCount > 0 ? ['#FF9800', '#F57C00'] : ['#30cfd0', '#330867']}
+                            style={styles.statCard}
+                        >
+                            <MaterialCommunityIcons name="refresh" size={32} color="#fff" />
+                            <Text style={styles.statNumber}>{retryCount}</Text>
+                            <Text style={styles.statLabel}>Retrying</Text>
+                        </LinearGradient>
                     </Animated.View>
                 </View>
 
-                {/* Action Buttons */}
                 <Animated.View entering={FadeInDown.delay(400).duration(600)} style={styles.actionButtons}>
-                    <Button
-                        mode="contained"
+                    <TouchableOpacity
                         onPress={handleManualSync}
-                        loading={isSyncing}
                         disabled={isSyncing || isOffline || queueItems.length === 0}
-                        icon="sync"
-                        style={styles.syncButton}
-                        contentStyle={{ height: 48 }}
+                        activeOpacity={0.8}
                     >
-                        Sync Now
-                    </Button>
+                        <LinearGradient
+                            colors={isSyncing || isOffline || queueItems.length === 0
+                                ? ['#BDBDBD', '#9E9E9E']
+                                : ['#667eea', '#764ba2']
+                            }
+                            style={styles.syncButton}
+                        >
+                            {isSyncing && (
+                                <Animated.View style={animatedIconStyle}>
+                                    <MaterialCommunityIcons name="sync" size={24} color="#fff" />
+                                </Animated.View>
+                            )}
+                            {!isSyncing && <MaterialCommunityIcons name="sync" size={24} color="#fff" />}
+                            <Text style={styles.syncButtonText}>
+                                {isSyncing ? 'Syncing...' : 'Sync Now'}
+                            </Text>
+                        </LinearGradient>
+                    </TouchableOpacity>
 
                     {queueItems.length > 0 && (
-                        <Button
-                            mode="outlined"
+                        <TouchableOpacity
                             onPress={handleClearQueue}
                             disabled={isSyncing}
-                            icon="delete-sweep-outline"
-                            style={styles.clearButton}
-                            textColor={theme.colors.error}
+                            activeOpacity={0.8}
                         >
-                            Clear Queue
-                        </Button>
+                            <View style={styles.clearButton}>
+                                <MaterialCommunityIcons name="delete-sweep-outline" size={24} color="#FF6B6B" />
+                                <Text style={styles.clearButtonText}>Clear Queue</Text>
+                            </View>
+                        </TouchableOpacity>
                     )}
                 </Animated.View>
 
-                {/* Queue List */}
-                <Text variant="titleMedium" style={styles.sectionTitle}>Queue Items</Text>
+                <View style={styles.sectionHeader}>
+                    <Text variant="titleLarge" style={styles.sectionTitle}>Queue Items</Text>
+                    {queueItems.length > 0 && (
+                        <View style={styles.itemCount}>
+                            <Text style={styles.itemCountText}>{queueItems.length}</Text>
+                        </View>
+                    )}
+                </View>
 
                 {queueItems.length === 0 ? (
                     <Animated.View entering={ZoomIn.delay(500)} style={styles.emptyState}>
-                        <MaterialCommunityIcons name="check-circle" size={80} color="#E0E0E0" />
-                        <Text variant="titleMedium" style={styles.emptyText}>All caught up!</Text>
-                        <Text variant="bodyMedium" style={styles.emptySubtext}>No pending items to sync</Text>
+                        <LinearGradient
+                            colors={['#E8F5E9', '#F1F8E9']}
+                            style={styles.emptyGradient}
+                        >
+                            <MaterialCommunityIcons name="check-circle" size={80} color="#4CAF50" />
+                            <Text variant="titleMedium" style={styles.emptyText}>All caught up!</Text>
+                            <Text variant="bodyMedium" style={styles.emptySubtext}>No pending items to sync</Text>
+                        </LinearGradient>
                     </Animated.View>
                 ) : (
                     <View style={styles.listContainer}>
@@ -206,32 +262,32 @@ const SyncScreen = ({ navigation }: any) => {
                                 key={item.id}
                                 entering={FadeInDown.delay(500 + (index * 100)).duration(500)}
                             >
-                                <Surface style={styles.itemCard} elevation={1}>
-                                    <View style={styles.itemIconContainer}>
-                                        <LinearGradient
-                                            colors={['#e3f2fd', '#bbdefb']}
-                                            style={styles.itemIconBg}
-                                        >
-                                            <MaterialCommunityIcons name={getTypeIcon(item.type)} size={24} color={theme.colors.primary} />
-                                        </LinearGradient>
-                                    </View>
+                                <LinearGradient
+                                    colors={['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)']}
+                                    style={styles.itemCard}
+                                >
+                                    <LinearGradient
+                                        colors={getTypeGradient(item.type)}
+                                        style={styles.itemIconContainer}
+                                    >
+                                        <MaterialCommunityIcons name={getTypeIcon(item.type)} size={24} color="#fff" />
+                                    </LinearGradient>
                                     <View style={styles.itemContent}>
                                         <Text variant="titleSmall" style={styles.itemTitle}>{getTypeLabel(item.type)}</Text>
-                                        <Text variant="bodySmall" style={styles.itemTime}>
-                                            {new Date(item.timestamp).toLocaleTimeString()} • {new Date(item.timestamp).toLocaleDateString()}
-                                        </Text>
+                                        <View style={styles.itemMeta}>
+                                            <MaterialCommunityIcons name="clock-outline" size={14} color="#999" />
+                                            <Text variant="bodySmall" style={styles.itemTime}>
+                                                {new Date(item.timestamp).toLocaleTimeString()} • {new Date(item.timestamp).toLocaleDateString()}
+                                            </Text>
+                                        </View>
                                     </View>
                                     {item.retryCount > 0 && (
-                                        <Chip
-                                            icon="alert-circle-outline"
-                                            mode="flat"
-                                            style={{ backgroundColor: '#FFF3E0' }}
-                                            textStyle={{ color: '#F57C00', fontSize: 10 }}
-                                        >
-                                            Retry {item.retryCount}
-                                        </Chip>
+                                        <View style={styles.retryBadge}>
+                                            <MaterialCommunityIcons name="alert-circle-outline" size={14} color="#FF9800" />
+                                            <Text style={styles.retryText}>Retry {item.retryCount}</Text>
+                                        </View>
                                     )}
-                                </Surface>
+                                </LinearGradient>
                             </Animated.View>
                         ))}
                     </View>
@@ -246,130 +302,278 @@ const SyncScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    content: {
-        padding: 20,
+        backgroundColor: '#F5F7FA',
     },
     header: {
-        paddingBottom: 20,
-        borderBottomLeftRadius: 24,
-        borderBottomRightRadius: 24,
-        elevation: 4,
-        marginBottom: 24,
+        paddingBottom: 60,
+        paddingHorizontal: spacing.lg,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+        elevation: 12,
+    },
+    decorativeCircle: {
+        position: 'absolute',
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderRadius: 1000,
     },
     headerContent: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 8,
-        height: 56,
+        paddingVertical: spacing.md,
     },
-    headerTitle: {
+    backButton: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1.5,
+        borderColor: 'rgba(255,255,255,0.3)',
+    },
+    headerTitleContainer: {
+        flex: 1,
+        alignItems: 'center',
+    },
+    screenTitle: {
+        fontWeight: '900',
         color: '#fff',
-        fontWeight: 'bold',
+        fontSize: 28,
+        letterSpacing: 0.5,
+        textAlign: 'center',
+        textShadowColor: 'rgba(0,0,0,0.2)',
+        textShadowOffset: { width: 0, height: 2 },
+        textShadowRadius: 4,
+    },
+    headerSubtitle: {
+        color: 'rgba(255,255,255,0.9)',
+        fontSize: 14,
+        marginTop: 2,
+        fontWeight: '500',
+    },
+    content: {
+        padding: spacing.lg,
+        paddingBottom: 100,
     },
     statusCard: {
-        borderRadius: 20,
-        overflow: 'hidden',
-        marginBottom: 24,
-    },
-    statusGradient: {
-        padding: 24,
+        borderRadius: 24,
+        padding: spacing.xl,
+        marginBottom: spacing.xl,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 20,
+        elevation: 8,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.5)',
     },
     statusRow: {
         flexDirection: 'row',
         alignItems: 'center',
     },
+    statusIconContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: spacing.lg,
+    },
     statusTextContainer: {
-        marginLeft: 20,
         flex: 1,
     },
     statusTitle: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontWeight: '900',
         marginBottom: 4,
+        fontSize: 24,
     },
     statusSubtitle: {
-        color: 'rgba(255,255,255,0.9)',
+        color: 'rgba(255,255,255,0.95)',
+        fontWeight: '500',
     },
     statsGrid: {
         flexDirection: 'row',
-        gap: 16,
-        marginBottom: 24,
+        gap: spacing.md,
+        marginBottom: spacing.xl,
     },
     statCol: {
         flex: 1,
     },
     statCard: {
-        padding: 20,
-        borderRadius: 16,
-        backgroundColor: '#fff',
+        padding: spacing.lg,
+        borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
+        minHeight: 140,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 6,
+    },
+    statNumber: {
+        fontSize: 40,
+        fontWeight: '900',
+        color: '#fff',
+        marginVertical: spacing.sm,
     },
     statLabel: {
-        color: '#757575',
-        marginTop: 4,
+        color: 'rgba(255,255,255,0.95)',
+        fontSize: 13,
+        fontWeight: '600',
+        textAlign: 'center',
     },
     actionButtons: {
-        gap: 12,
-        marginBottom: 32,
+        gap: spacing.md,
+        marginBottom: spacing.xl,
     },
     syncButton: {
-        borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: spacing.lg,
+        borderRadius: 16,
+        gap: spacing.sm,
+        shadowColor: '#667eea',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        elevation: 6,
+    },
+    syncButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '700',
     },
     clearButton: {
-        borderRadius: 12,
-        borderColor: '#FFEBEE',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: spacing.lg,
+        borderRadius: 16,
+        gap: spacing.sm,
+        backgroundColor: '#fff',
+        borderWidth: 2,
+        borderColor: '#FFE0E0',
+    },
+    clearButtonText: {
+        color: '#FF6B6B',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: spacing.md,
+        gap: spacing.sm,
     },
     sectionTitle: {
-        fontWeight: 'bold',
-        marginBottom: 16,
-        color: '#424242',
+        fontWeight: '800',
+        color: '#1A1A1A',
+        fontSize: 22,
+    },
+    itemCount: {
+        backgroundColor: '#667eea',
+        borderRadius: 12,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+    },
+    itemCountText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '700',
     },
     listContainer: {
-        gap: 12,
+        gap: spacing.md,
     },
     itemCard: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 16,
-        borderRadius: 16,
-        backgroundColor: '#fff',
+        padding: spacing.lg,
+        borderRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 4,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.5)',
     },
     itemIconContainer: {
-        marginRight: 16,
-    },
-    itemIconBg: {
-        width: 48,
-        height: 48,
-        borderRadius: 12,
-        alignItems: 'center',
+        width: 56,
+        height: 56,
+        borderRadius: 28,
         justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: spacing.md,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 3,
     },
     itemContent: {
         flex: 1,
     },
     itemTitle: {
-        fontWeight: 'bold',
-        color: '#424242',
+        fontWeight: '700',
+        color: '#1A1A1A',
+        fontSize: 16,
+        marginBottom: 4,
+    },
+    itemMeta: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
     },
     itemTime: {
-        color: '#9E9E9E',
-        marginTop: 2,
+        color: '#999',
+        fontSize: 12,
+    },
+    retryBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: '#FFF3E0',
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 6,
+        borderRadius: 12,
+    },
+    retryText: {
+        color: '#FF9800',
+        fontSize: 11,
+        fontWeight: '700',
     },
     emptyState: {
+        borderRadius: 24,
+        overflow: 'hidden',
+        shadowColor: '#4CAF50',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        elevation: 4,
+    },
+    emptyGradient: {
         alignItems: 'center',
-        padding: 40,
+        padding: spacing.xxl * 2,
     },
     emptyText: {
-        color: '#BDBDBD',
-        marginTop: 16,
-        fontWeight: 'bold',
+        color: '#4CAF50',
+        marginTop: spacing.lg,
+        fontWeight: '800',
+        fontSize: 20,
     },
     emptySubtext: {
-        color: '#E0E0E0',
-        marginTop: 4,
+        color: '#81C784',
+        marginTop: spacing.sm,
+        fontSize: 15,
+        fontWeight: '500',
     },
 });
 

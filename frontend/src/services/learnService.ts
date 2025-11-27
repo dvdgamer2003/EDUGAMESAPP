@@ -7,7 +7,7 @@ const CACHE_PREFIX = 'learn_cache_';
 
 // Set to true to force offline mode (bypass API and cache)
 // Set to true to force offline mode (bypass API and cache)
-const FORCE_OFFLINE = false;
+const FORCE_OFFLINE = true;
 
 export const learnService = {
     getClasses: async () => {
@@ -107,8 +107,8 @@ export const learnService = {
 
     getQuiz: async (subchapterId: string) => {
         if (FORCE_OFFLINE) {
-            console.log('[OFFLINE MODE] Quiz not available offline');
-            return null;
+            console.log('[OFFLINE MODE] Using offline data for quiz');
+            return offlineDataService.getQuiz(subchapterId);
         }
 
         try {
@@ -119,8 +119,8 @@ export const learnService = {
             const cached = await getData(`${CACHE_PREFIX}quiz_${subchapterId}`);
             if (cached) return cached;
 
-            console.log('Quiz not available offline');
-            return null;
+            console.log('Using offline data for quiz');
+            return offlineDataService.getQuiz(subchapterId);
         }
     },
 

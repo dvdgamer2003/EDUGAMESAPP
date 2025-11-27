@@ -78,6 +78,8 @@ const RegisterScreen = ({ navigation }: any) => {
             setSuccess(t('register.registerSuccess') || 'Registration successful!');
             setVisible(true);
         } catch (e: any) {
+            console.error('❌ Registration error:', e);
+            console.error('Error keys:', e ? Object.keys(e) : null);
             const errorMessage = e?.response?.data?.message || t('register.registerFailed') || 'Registration failed. Please try again.';
             setError(errorMessage);
             setVisible(true);

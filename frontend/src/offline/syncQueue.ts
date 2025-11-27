@@ -118,8 +118,13 @@ export const processQueue = async (): Promise<void> => {
     }
 
     const netInfo = await NetInfo.fetch();
-    if (!netInfo.isConnected) {
-        console.log('[SyncQueue] Device is offline, skipping queue processing');
+    const isOnline = netInfo.isConnected === true && netInfo.isInternetReachable !== false;
+
+    if (!isOnline) {
+        console.log('[SyncQueue] Device is offline, skipping queue processing', {
+            isConnected: netInfo.isConnected,
+            isInternetReachable: netInfo.isInternetReachable
+        });
         return;
     }
 
@@ -172,14 +177,18 @@ export const clearQueue = async (): Promise<void> => {
  */
 export const initializeSyncListener = (): (() => void) => {
     const unsubscribe = NetInfo.addEventListener((state) => {
-        if (state.isConnected) {
+        const isOnline = state.isConnected === true && state.isInternetReachable !== false;
+        if (isOnline) {
+            console.log('[SyncQueue] Device came online, processing queue');
             processQueue();
         }
     });
 
     // Process queue immediately if online
     NetInfo.fetch().then((state) => {
-        if (state.isConnected) {
+        const isOnline = state.isConnected === true && state.isInternetReachable !== false;
+        if (isOnline) {
+            console.log('[SyncQueue] Initial check - device is online, processing queue');
             processQueue();
         }
     });

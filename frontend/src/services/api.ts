@@ -1,10 +1,30 @@
 import axios from 'axios';
+import { Platform } from 'react-native';
 import { STORAGE_KEYS } from '../utils/constants';
 import { getData } from '../offline/offlineStorage';
 
-// Update this with your computer's IP address for mobile testing
-// For mobile devices, use your computer's IP address instead of localhost
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.7:5000/api';
+// API Configuration
+// -----------------
+// For Web/Emulator: use localhost
+// For Physical Device: use your computer's IP address (check with 'ipconfig' on Windows or 'ifconfig' on Mac/Linux)
+// 
+// To change the API URL, set EXPO_PUBLIC_API_URL in your .env file or update the default below
+// Example for physical device: 'http://192.168.1.7:5000/api' (replace with your computer's IP)
+
+const getDefaultApiUrl = () => {
+    // Use localhost for web and Android emulator
+    if (Platform.OS === 'web') {
+        return 'http://localhost:5000/api';
+    }
+    // For Android emulator, use 10.0.2.2 which maps to host's localhost
+    // For iOS simulator and physical devices on same network, use your computer's IP
+    return 'http://localhost:5000/api';
+};
+
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || getDefaultApiUrl();
+
+// Log the API URL for debugging
+console.log('🌐 API Base URL:', API_BASE_URL);
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -19,23 +39,45 @@ api.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
+        // Log all API requests for debugging
+        console.log('📡 API Request:', {
+            method: config.method?.toUpperCase(),
+            url: config.url,
+            baseURL: config.baseURL,
+            fullURL: `${config.baseURL}${config.url}`,
+            hasData: !!config.data
+        });
+
         return config;
     },
     (error) => {
+        console.error('❌ Request interceptor error:', error);
         return Promise.reject(error);
     }
 );
 
 // Response interceptor for global error handling
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        console.log('✅ API Response:', {
+            status: response.status,
+            url: response.config.url,
+            hasData: !!response.data
+        });
+        return response;
+    },
     (error) => {
         // Log error for debugging
-        console.error('API Error:', {
+        console.error('❌ API Error Details:', {
             url: error.config?.url,
             method: error.config?.method,
+            baseURL: error.config?.baseURL,
             status: error.response?.status,
-            message: error.response?.data?.message || error.message
+            message: error.response?.data?.message || error.message,
+            errorType: error.code,
+            hasResponse: !!error.response,
+            hasRequest: !!error.request
         });
 
         // Handle specific error cases
@@ -46,16 +88,16 @@ api.interceptors.response.use(
             switch (status) {
                 case 401:
                     // Unauthorized - could trigger logout
-                    console.warn('Unauthorized access - token may be invalid');
+                    console.warn('⚠️ Unauthorized access - token may be invalid');
                     break;
                 case 403:
-                    console.warn('Forbidden - insufficient permissions');
+                    console.warn('⚠️ Forbidden - insufficient permissions');
                     break;
                 case 404:
-                    console.warn('Resource not found');
+                    console.warn('⚠️ Resource not found');
                     break;
                 case 500:
-                    console.error('Server error');
+                    console.error('⚠️ Server error');
                     break;
             }
 
@@ -63,16 +105,19 @@ api.interceptors.response.use(
             return Promise.reject({
                 message: data?.message || 'An error occurred',
                 status,
-                data
+                data,
+                response: error.response
             });
         } else if (error.request) {
             // Request made but no response
+            console.error('❌ Network Error - No response from server');
             return Promise.reject({
                 message: 'Network error - please check your connection',
                 isNetworkError: true
             });
         } else {
             // Something else happened
+            console.error('❌ Unexpected error:', error.message);
             return Promise.reject({
                 message: error.message || 'An unexpected error occurred'
             });

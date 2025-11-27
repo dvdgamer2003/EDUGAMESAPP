@@ -41,21 +41,83 @@ const getHtmlContent = (modelUrl: string) => `
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; }
-        body { margin: 0; overflow: hidden; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        model-viewer { width: 100vw; height: 100vh; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+        }
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        model-viewer { 
+            width: 100vw; 
+            height: 100vh;
+            --poster-color: transparent;
+        }
+        model-viewer::part(default-progress-bar) {
+            background-color: rgba(255,255,255,0.3);
+        }
+        model-viewer::part(default-progress-bar-fill) {
+            background-color: #fff;
+        }
+        .error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.95);
+            padding: 24px;
+            border-radius: 16px;
+            text-align: center;
+            display: none;
+        }
+        .error-message.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <model-viewer
+        id="model-viewer"
         src="${modelUrl}"
         camera-controls
+        touch-action="pan-y"
         auto-rotate
+        auto-rotate-delay="1000"
+        rotation-per-second="30deg"
         shadow-intensity="1"
+        shadow-softness="0.8"
+        exposure="1"
+        camera-orbit="0deg 75deg 105%"
+        min-camera-orbit="auto auto 50%"
+        max-camera-orbit="auto auto 200%"
+        interpolation-decay="200"
+        loading="eager"
     ></model-viewer>
+    <div id="error" class="error-message">
+        <h3 style="color: #FF6B6B; margin-bottom: 8px;">Failed to load model</h3>
+        <p style="color: #666; font-size: 14px;">Please check your connection</p>
+    </div>
+    <script>
+        const modelViewer = document.querySelector('#model-viewer');
+        const errorDiv = document.querySelector('#error');
+        
+        modelViewer.addEventListener('error', (event) => {
+            console.error('Model loading error:', event);
+            errorDiv.classList.add('show');
+        });
+        
+        modelViewer.addEventListener('load', () => {
+            console.log('Model loaded successfully');
+            errorDiv.classList.remove('show');
+        });
+    </script>
 </body>
 </html>
 `;
@@ -64,6 +126,7 @@ const Mobile3DModelViewer: React.FC<Mobile3DModelViewerProps> = ({ visible, titl
     const insets = useSafeAreaInsets();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const [retryCount, setRetryCount] = useState(0);
 
     // Resolve asset URI
     const source = getModelSource(fileName);
@@ -117,8 +180,17 @@ const Mobile3DModelViewer: React.FC<Mobile3DModelViewerProps> = ({ visible, titl
                         <Animated.View entering={FadeIn} style={styles.errorContainer}>
                             <MaterialCommunityIcons name="alert-circle" size={64} color="#FF6B6B" />
                             <Text style={styles.errorTitle}>Failed to Load Model</Text>
-                            <Text style={styles.errorText}>Please check your connection and try again</Text>
-                            <TouchableOpacity onPress={() => setError(false)} style={styles.retryButton}>
+                            <Text style={styles.errorText}>
+                                {retryCount > 0 ? `Retry attempt ${retryCount}/3 failed. ` : ''}
+                                Please check your connection and try again
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setError(false);
+                                    setRetryCount(prev => prev + 1);
+                                }}
+                                style={styles.retryButton}
+                            >
                                 <LinearGradient
                                     colors={['#6A5AE0', '#8B7AFF']}
                                     style={styles.retryGradient}
@@ -130,15 +202,26 @@ const Mobile3DModelViewer: React.FC<Mobile3DModelViewerProps> = ({ visible, titl
                     )}
 
                     <WebView
-                        source={{ html: htmlContent, baseUrl: 'http://192.168.1.7:8081/' }}
+                        source={{
+                            html: htmlContent,
+                            baseUrl: Platform.OS === 'android' ? 'file:///android_asset/' : undefined
+                        }}
                         style={styles.webview}
                         onLoadStart={() => setLoading(true)}
                         onLoadEnd={() => setLoading(false)}
-                        onError={() => {
+                        onError={(syntheticEvent) => {
+                            const { nativeEvent } = syntheticEvent;
+                            console.error('WebView error:', nativeEvent);
                             setLoading(false);
                             setError(true);
                         }}
-                        androidLayerType="software"
+                        androidLayerType="hardware"
+                        androidHardwareAccelerationDisabled={false}
+                        javaScriptEnabled={true}
+                        domStorageEnabled={true}
+                        allowFileAccess={true}
+                        allowUniversalAccessFromFileURLs={true}
+                        mixedContentMode="always"
                         opacity={0.99}
                     />
                 </View>

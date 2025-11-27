@@ -1,15 +1,16 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
-import { Text, Surface, useTheme, ProgressBar, Chip } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Platform } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
-import { spacing, borderRadius } from '../theme';
+import Animated, { FadeInDown, FadeInRight, ZoomIn, FadeIn } from 'react-native-reanimated';
+import { spacing } from '../theme';
 import { LinearGradient } from 'expo-linear-gradient';
-
 import { useResponsive } from '../hooks/useResponsive';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
 
 interface Badge {
     id: string;
@@ -18,12 +19,14 @@ interface Badge {
     icon: string;
     unlocked: boolean;
     requiredXP: number;
+    gradient: readonly [string, string];
 }
 
 const RewardsScreen = () => {
     const theme = useTheme();
     const { xp, streak } = useAuth();
     const { containerStyle } = useResponsive();
+    const insets = useSafeAreaInsets();
 
     const level = Math.floor(xp / 100) + 1;
     const currentLevelXP = xp % 100;
@@ -31,12 +34,35 @@ const RewardsScreen = () => {
     const progress = currentLevelXP / nextLevelXP;
 
     const badges: Badge[] = [
-        { id: '1', name: 'First Steps', description: 'Complete your first quiz', icon: 'star', unlocked: xp >= 10, requiredXP: 10 },
-        { id: '2', name: 'Quick Learner', description: 'Earn 100 XP', icon: 'flash', unlocked: xp >= 100, requiredXP: 100 },
-        { id: '3', name: 'Dedicated', description: 'Maintain a 7-day streak', icon: 'fire', unlocked: streak >= 7, requiredXP: 0 },
-        { id: '4', name: 'Scholar', description: 'Reach Level 5', icon: 'school', unlocked: level >= 5, requiredXP: 500 },
-        { id: '5', name: 'Expert', description: 'Earn 1000 XP', icon: 'trophy', unlocked: xp >= 1000, requiredXP: 1000 },
-        { id: '6', name: 'Game Master', description: 'Win 10 games', icon: 'gamepad-variant', unlocked: false, requiredXP: 0 },
+        // Beginner Achievements
+        { id: '1', name: 'First Steps', description: 'Complete your first quiz', icon: 'star', unlocked: xp >= 10, requiredXP: 10, gradient: ['#667eea', '#764ba2'] },
+        { id: '2', name: 'Curious Mind', description: 'Complete your first lesson', icon: 'book-open-variant', unlocked: xp >= 5, requiredXP: 5, gradient: ['#4facfe', '#00f2fe'] },
+        { id: '3', name: 'Quick Learner', description: 'Earn 100 XP', icon: 'flash', unlocked: xp >= 100, requiredXP: 100, gradient: ['#f093fb', '#f5576c'] },
+
+        // Streak Achievements
+        { id: '4', name: 'Dedicated', description: 'Maintain a 7-day streak', icon: 'fire', unlocked: streak >= 7, requiredXP: 0, gradient: ['#fa709a', '#fee140'] },
+        { id: '5', name: 'Unstoppable', description: 'Maintain a 30-day streak', icon: 'fire-circle', unlocked: streak >= 30, requiredXP: 0, gradient: ['#ff6b6b', '#ee5a6f'] },
+        { id: '6', name: 'Legend', description: 'Maintain a 100-day streak', icon: 'crown', unlocked: streak >= 100, requiredXP: 0, gradient: ['#ffd700', '#ffed4e'] },
+
+        // Level Achievements
+        { id: '7', name: 'Scholar', description: 'Reach Level 5', icon: 'school', unlocked: level >= 5, requiredXP: 500, gradient: ['#30cfd0', '#330867'] },
+        { id: '8', name: 'Master', description: 'Reach Level 10', icon: 'medal', unlocked: level >= 10, requiredXP: 1000, gradient: ['#a8edea', '#fed6e3'] },
+        { id: '9', name: 'Grandmaster', description: 'Reach Level 20', icon: 'trophy-award', unlocked: level >= 20, requiredXP: 2000, gradient: ['#ffecd2', '#fcb69f'] },
+
+        // XP Milestones
+        { id: '10', name: 'Rising Star', description: 'Earn 500 XP', icon: 'star-circle', unlocked: xp >= 500, requiredXP: 500, gradient: ['#43e97b', '#38f9d7'] },
+        { id: '11', name: 'Expert', description: 'Earn 1000 XP', icon: 'trophy', unlocked: xp >= 1000, requiredXP: 1000, gradient: ['#fa709a', '#fee140'] },
+        { id: '12', name: 'Elite', description: 'Earn 5000 XP', icon: 'trophy-variant', unlocked: xp >= 5000, requiredXP: 5000, gradient: ['#667eea', '#764ba2'] },
+
+        // Game Achievements
+        { id: '13', name: 'Game Starter', description: 'Play your first game', icon: 'gamepad', unlocked: false, requiredXP: 0, gradient: ['#f093fb', '#f5576c'] },
+        { id: '14', name: 'Game Master', description: 'Win 10 games', icon: 'gamepad-variant', unlocked: false, requiredXP: 0, gradient: ['#ffecd2', '#fcb69f'] },
+        { id: '15', name: 'Champion', description: 'Win 50 games', icon: 'trophy-outline', unlocked: false, requiredXP: 0, gradient: ['#30cfd0', '#330867'] },
+
+        // Exploration Achievements
+        { id: '16', name: 'Explorer', description: 'Complete 10 lessons', icon: 'compass', unlocked: false, requiredXP: 0, gradient: ['#4facfe', '#00f2fe'] },
+        { id: '17', name: 'Quiz Ace', description: 'Score 100% on 5 quizzes', icon: 'check-decagram', unlocked: false, requiredXP: 0, gradient: ['#43e97b', '#38f9d7'] },
+        { id: '18', name: '3D Enthusiast', description: 'View 5 3D models', icon: 'cube-outline', unlocked: false, requiredXP: 0, gradient: ['#a8edea', '#fed6e3'] },
     ];
 
     const unlockedBadges = badges.filter((b) => b.unlocked);
@@ -44,102 +70,193 @@ const RewardsScreen = () => {
 
     return (
         <View style={styles.container}>
-            <ScrollView contentContainerStyle={[styles.content, containerStyle]} showsVerticalScrollIndicator={false}>
-                <Text variant="headlineMedium" style={styles.screenTitle}>
-                    Rewards & Progress
-                </Text>
+            {/* Premium Gradient Header */}
+            <LinearGradient
+                colors={['#667eea', '#764ba2', '#5B4B8A']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.header, { paddingTop: insets.top + 16 }]}
+            >
+                <View style={[styles.decorativeCircle, { top: -40, right: -30, width: 120, height: 120 }]} />
+                <View style={[styles.decorativeCircle, { bottom: -20, left: -20, width: 80, height: 80 }]} />
 
+                <Animated.View entering={FadeIn.duration(600)} style={styles.headerContent}>
+                    <Text variant="headlineLarge" style={styles.screenTitle}>
+                        Rewards & Progress
+                    </Text>
+                    <Text style={styles.headerSubtitle}>
+                        Track your achievements and level up!
+                    </Text>
+                </Animated.View>
+            </LinearGradient>
+
+            <ScrollView
+                contentContainerStyle={[styles.content, containerStyle]}
+                showsVerticalScrollIndicator={false}
+                style={{ marginTop: -40 }}
+            >
                 {/* Level Card */}
                 <Animated.View entering={FadeInDown.delay(100).duration(600)}>
-                    <Surface style={styles.levelCard} elevation={2}>
+                    <LinearGradient
+                        colors={['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)']}
+                        style={styles.levelCard}
+                    >
                         <View style={styles.levelHeader}>
-                            <View style={styles.levelCircle}>
+                            <LinearGradient
+                                colors={['#667eea', '#764ba2']}
+                                style={styles.levelCircle}
+                            >
+                                <MaterialCommunityIcons name="trophy-variant" size={24} color="#fff" />
                                 <Text style={styles.levelNumber}>{level}</Text>
-                            </View>
+                            </LinearGradient>
                             <View style={styles.levelInfo}>
                                 <Text variant="titleLarge" style={styles.levelTitle}>Level {level}</Text>
-                                <Text variant="bodyMedium" style={styles.levelSubtitle}>
-                                    <Text style={{ color: '#FF4081', fontWeight: 'bold' }}>{currentLevelXP}</Text> / {nextLevelXP} XP
-                                </Text>
+                                <View style={styles.xpRow}>
+                                    <MaterialCommunityIcons name="star" size={16} color="#FFB800" />
+                                    <Text variant="bodyMedium" style={styles.levelSubtitle}>
+                                        <Text style={{ color: '#667eea', fontWeight: 'bold' }}>{currentLevelXP}</Text>
+                                        <Text style={{ color: '#999' }}> / {nextLevelXP} XP</Text>
+                                    </Text>
+                                </View>
                             </View>
                         </View>
 
                         <View style={styles.progressContainer}>
-                            <ProgressBar progress={progress} color="#6A5AE0" style={styles.progressBar} />
+                            <View style={styles.progressTrack}>
+                                <LinearGradient
+                                    colors={['#667eea', '#764ba2']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                    style={[styles.progressFill, { width: `${progress * 100}%` }]}
+                                />
+                            </View>
                         </View>
 
-                        <Text style={styles.xpToNextLevel}>
-                            {nextLevelXP - currentLevelXP} XP to Level {level + 1}
-                        </Text>
-                    </Surface>
+                        <View style={styles.levelFooter}>
+                            <View style={styles.statBox}>
+                                <Text style={styles.statValue}>{xp}</Text>
+                                <Text style={styles.statLabel}>Total XP</Text>
+                            </View>
+                            <View style={styles.statDivider} />
+                            <View style={styles.statBox}>
+                                <Text style={styles.statValue}>{nextLevelXP - currentLevelXP}</Text>
+                                <Text style={styles.statLabel}>To Next Level</Text>
+                            </View>
+                        </View>
+                    </LinearGradient>
                 </Animated.View>
 
                 {/* Streak Card */}
                 <Animated.View entering={FadeInDown.delay(200).duration(600)}>
-                    <Surface style={styles.streakCard} elevation={4}>
+                    <LinearGradient
+                        colors={['#FF6B6B', '#FF8E53']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.streakCard}
+                    >
                         <View style={styles.streakContent}>
-                            <MaterialCommunityIcons name="fire" size={48} color="#FF5722" />
-                            <Text style={styles.streakNumber}>{streak}</Text>
-                            <Text variant="titleMedium" style={styles.streakLabel}>Day Streak</Text>
+                            <View style={styles.fireIconContainer}>
+                                <MaterialCommunityIcons name="fire" size={56} color="#fff" />
+                                <View style={styles.streakBadge}>
+                                    <Text style={styles.streakNumber}>{streak}</Text>
+                                </View>
+                            </View>
+                            <Text variant="titleLarge" style={styles.streakLabel}>Day Streak</Text>
                             <Text style={styles.streakMotivation}>
-                                Keep learning daily to maintain your streak!
+                                {streak > 0 ? '🔥 You\'re on fire! Keep it up!' : 'Start your streak today!'}
                             </Text>
                         </View>
-                    </Surface>
+                    </LinearGradient>
                 </Animated.View>
 
                 {/* Unlocked Badges */}
                 <View style={styles.sectionContainer}>
-                    <Text variant="titleLarge" style={styles.sectionTitle}>
-                        Unlocked Badges ({unlockedBadges.length})
-                    </Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.badgesScroll}>
-                        {unlockedBadges.map((badge, index) => (
-                            <Animated.View key={badge.id} entering={FadeInRight.delay(300 + index * 100).duration(500)}>
-                                <Surface style={styles.badgeCard} elevation={2}>
-                                    <View style={[styles.badgeIcon, { backgroundColor: '#6A5AE0' }]}>
-                                        <MaterialCommunityIcons name={badge.icon as any} size={28} color="#fff" />
-                                    </View>
-                                    <View style={styles.badgeInfo}>
-                                        <Text variant="titleMedium" style={styles.badgeName}>{badge.name}</Text>
-                                        <Text variant="bodySmall" style={styles.badgeDescription} numberOfLines={2}>
-                                            {badge.description}
-                                        </Text>
-                                    </View>
-                                </Surface>
-                            </Animated.View>
-                        ))}
-                        {unlockedBadges.length === 0 && (
+                    <View style={styles.sectionHeader}>
+                        <Text variant="titleLarge" style={styles.sectionTitle}>
+                            Unlocked Badges
+                        </Text>
+                        <View style={styles.badgeCount}>
+                            <Text style={styles.badgeCountText}>{unlockedBadges.length}</Text>
+                        </View>
+                    </View>
+
+                    {unlockedBadges.length === 0 ? (
+                        <Animated.View entering={ZoomIn.delay(300)} style={styles.emptyState}>
+                            <MaterialCommunityIcons name="trophy-outline" size={64} color="#E0E0E0" />
                             <Text style={styles.emptyText}>Start learning to unlock badges!</Text>
-                        )}
-                    </ScrollView>
+                        </Animated.View>
+                    ) : (
+                        <View style={styles.badgesGrid}>
+                            {unlockedBadges.map((badge, index) => (
+                                <Animated.View
+                                    key={badge.id}
+                                    entering={FadeInRight.delay(300 + index * 100).duration(500)}
+                                    style={styles.badgeWrapper}
+                                >
+                                    <TouchableOpacity activeOpacity={0.8}>
+                                        <LinearGradient
+                                            colors={badge.gradient}
+                                            style={styles.badgeCard}
+                                        >
+                                            <View style={styles.badgeIconContainer}>
+                                                <MaterialCommunityIcons name={badge.icon as any} size={32} color="#fff" />
+                                            </View>
+                                            <Text style={styles.badgeName}>{badge.name}</Text>
+                                            <Text style={styles.badgeDescription} numberOfLines={2}>
+                                                {badge.description}
+                                            </Text>
+                                            <View style={styles.checkmark}>
+                                                <MaterialCommunityIcons name="check-circle" size={20} color="#fff" />
+                                            </View>
+                                        </LinearGradient>
+                                    </TouchableOpacity>
+                                </Animated.View>
+                            ))}
+                        </View>
+                    )}
                 </View>
 
                 {/* Locked Badges */}
-                <View style={styles.sectionContainer}>
-                    <Text variant="titleLarge" style={styles.sectionTitle}>
-                        Locked Badges
-                    </Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.badgesScroll}>
-                        {lockedBadges.map((badge, index) => (
-                            <Surface key={badge.id} style={[styles.badgeCard, styles.lockedBadge]} elevation={1}>
-                                <View style={[styles.badgeIcon, { backgroundColor: '#E0E0E0' }]}>
-                                    <MaterialCommunityIcons name="lock" size={28} color="#9E9E9E" />
-                                </View>
-                                <View style={styles.badgeInfo}>
-                                    <Text variant="titleMedium" style={[styles.badgeName, { color: '#9E9E9E' }]}>{badge.name}</Text>
-                                    <Text variant="bodySmall" style={styles.badgeDescription} numberOfLines={2}>
-                                        {badge.description}
-                                    </Text>
-                                    {badge.requiredXP > 0 && (
-                                        <Text style={styles.xpNeeded}>{badge.requiredXP} XP needed</Text>
-                                    )}
-                                </View>
-                            </Surface>
-                        ))}
-                    </ScrollView>
-                </View>
+                {lockedBadges.length > 0 && (
+                    <View style={styles.sectionContainer}>
+                        <View style={styles.sectionHeader}>
+                            <Text variant="titleLarge" style={styles.sectionTitle}>
+                                Locked Badges
+                            </Text>
+                            <View style={[styles.badgeCount, { backgroundColor: '#E0E0E0' }]}>
+                                <Text style={[styles.badgeCountText, { color: '#666' }]}>{lockedBadges.length}</Text>
+                            </View>
+                        </View>
 
+                        <View style={styles.badgesGrid}>
+                            {lockedBadges.map((badge, index) => (
+                                <Animated.View
+                                    key={badge.id}
+                                    entering={FadeInRight.delay(400 + index * 100).duration(500)}
+                                    style={styles.badgeWrapper}
+                                >
+                                    <View style={styles.lockedBadgeCard}>
+                                        <View style={styles.lockedIconContainer}>
+                                            <MaterialCommunityIcons name="lock" size={32} color="#999" />
+                                        </View>
+                                        <Text style={styles.lockedBadgeName}>{badge.name}</Text>
+                                        <Text style={styles.lockedBadgeDescription} numberOfLines={2}>
+                                            {badge.description}
+                                        </Text>
+                                        {badge.requiredXP > 0 && (
+                                            <View style={styles.xpNeededBadge}>
+                                                <MaterialCommunityIcons name="star-outline" size={12} color="#999" />
+                                                <Text style={styles.xpNeededText}>{badge.requiredXP} XP</Text>
+                                            </View>
+                                        )}
+                                    </View>
+                                </Animated.View>
+                            ))}
+                        </View>
+                    </View>
+                )}
+
+                <View style={{ height: 40 }} />
             </ScrollView>
         </View>
     );
@@ -148,28 +265,58 @@ const RewardsScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F5F7',
+        backgroundColor: '#F5F7FA',
+    },
+    header: {
+        paddingBottom: 60,
+        paddingHorizontal: spacing.lg,
+        overflow: 'hidden',
+        shadowColor: '#764ba2',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+        elevation: 12,
+    },
+    decorativeCircle: {
+        position: 'absolute',
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderRadius: 1000,
+    },
+    headerContent: {
+        alignItems: 'center',
+        paddingVertical: spacing.md,
+    },
+    screenTitle: {
+        fontWeight: '900',
+        color: '#fff',
+        fontSize: 32,
+        letterSpacing: 0.5,
+        textAlign: 'center',
+        textShadowColor: 'rgba(0,0,0,0.2)',
+        textShadowOffset: { width: 0, height: 2 },
+        textShadowRadius: 4,
+    },
+    headerSubtitle: {
+        color: 'rgba(255,255,255,0.9)',
+        fontSize: 15,
+        marginTop: 4,
+        fontWeight: '500',
     },
     content: {
         padding: spacing.lg,
         paddingBottom: 100,
     },
-    screenTitle: {
-        fontWeight: '800',
-        color: '#1A1A1A',
-        marginBottom: spacing.lg,
-        fontSize: 28,
-    },
     levelCard: {
-        backgroundColor: '#fff',
         borderRadius: 24,
-        padding: spacing.lg,
+        padding: spacing.xl,
         marginBottom: spacing.xl,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 12,
-        elevation: 3,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 8,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.5)',
     },
     levelHeader: {
         flexDirection: 'row',
@@ -177,23 +324,23 @@ const styles = StyleSheet.create({
         marginBottom: spacing.lg,
     },
     levelCircle: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        backgroundColor: '#6A5AE0',
+        width: 80,
+        height: 80,
+        borderRadius: 40,
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: spacing.md,
-        shadowColor: '#6A5AE0',
+        shadowColor: '#667eea',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 4,
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
+        elevation: 6,
     },
     levelNumber: {
-        fontSize: 28,
-        fontWeight: 'bold',
+        fontSize: 24,
+        fontWeight: '900',
         color: '#fff',
+        marginTop: 4,
     },
     levelInfo: {
         flex: 1,
@@ -201,128 +348,228 @@ const styles = StyleSheet.create({
     levelTitle: {
         fontWeight: '800',
         color: '#1A1A1A',
-        fontSize: 20,
+        fontSize: 24,
+    },
+    xpRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        marginTop: 4,
     },
     levelSubtitle: {
-        color: '#666',
         fontWeight: '600',
     },
     progressContainer: {
-        height: 12,
-        backgroundColor: '#F0F0F0',
-        borderRadius: 6,
-        marginBottom: spacing.sm,
+        marginBottom: spacing.lg,
+    },
+    progressTrack: {
+        height: 14,
+        backgroundColor: 'rgba(102, 126, 234, 0.15)',
+        borderRadius: 7,
         overflow: 'hidden',
     },
-    progressBar: {
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: '#6A5AE0',
+    progressFill: {
+        height: '100%',
+        borderRadius: 7,
     },
-    xpToNextLevel: {
-        textAlign: 'center',
-        color: '#888',
-        fontSize: 13,
-        fontWeight: '500',
+    levelFooter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+    },
+    statBox: {
+        alignItems: 'center',
+        flex: 1,
+    },
+    statValue: {
+        fontSize: 28,
+        fontWeight: '900',
+        color: '#667eea',
+    },
+    statLabel: {
+        fontSize: 12,
+        color: '#999',
+        marginTop: 2,
+        fontWeight: '600',
+    },
+    statDivider: {
+        width: 1,
+        height: 40,
+        backgroundColor: 'rgba(0,0,0,0.1)',
     },
     streakCard: {
-        backgroundColor: '#fff',
-        borderRadius: 100, // Pill shape
-        paddingVertical: spacing.xl,
-        paddingHorizontal: spacing.lg,
+        borderRadius: 24,
+        padding: spacing.xl,
         marginBottom: spacing.xl,
-        alignItems: 'center',
-        shadowColor: '#000',
+        shadowColor: '#FF6B6B',
         shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.08,
-        shadowRadius: 16,
-        elevation: 4,
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+        elevation: 8,
     },
     streakContent: {
         alignItems: 'center',
     },
+    fireIconContainer: {
+        position: 'relative',
+        marginBottom: spacing.md,
+    },
+    streakBadge: {
+        position: 'absolute',
+        bottom: -8,
+        right: -8,
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 4,
+    },
     streakNumber: {
-        fontSize: 48,
+        fontSize: 20,
         fontWeight: '900',
-        color: '#FF5722',
-        marginVertical: 4,
+        color: '#FF6B6B',
     },
     streakLabel: {
-        fontWeight: '700',
-        color: '#1A1A1A',
+        fontWeight: '800',
+        color: '#fff',
         marginBottom: spacing.sm,
+        fontSize: 22,
     },
     streakMotivation: {
-        color: '#FF4081',
-        fontSize: 14,
-        fontWeight: '500',
+        color: 'rgba(255,255,255,0.95)',
+        fontSize: 15,
+        fontWeight: '600',
         textAlign: 'center',
     },
     sectionContainer: {
         marginBottom: spacing.xl,
     },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: spacing.md,
+        gap: spacing.sm,
+    },
     sectionTitle: {
         fontWeight: '800',
         color: '#1A1A1A',
-        marginBottom: spacing.md,
-        fontSize: 20,
+        fontSize: 22,
     },
-    badgesScroll: {
-        paddingRight: spacing.lg,
-        paddingBottom: spacing.md, // For shadow
+    badgeCount: {
+        backgroundColor: '#667eea',
+        borderRadius: 12,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+    },
+    badgeCountText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '700',
+    },
+    badgesGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: spacing.md,
+    },
+    badgeWrapper: {
+        width: (width - spacing.lg * 2 - spacing.md) / 2,
+        minWidth: 150,
     },
     badgeCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        borderRadius: 50, // Pill shape
-        padding: spacing.md,
-        paddingRight: spacing.xl,
-        marginRight: spacing.md,
-        minWidth: 220,
-        maxWidth: 280,
+        borderRadius: 20,
+        padding: spacing.lg,
+        minHeight: 180,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 2,
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 6,
+        position: 'relative',
     },
-    lockedBadge: {
-        opacity: 0.8,
-        backgroundColor: '#FAFAFA',
-    },
-    badgeIcon: {
-        width: 56,
-        height: 56,
-        borderRadius: 28,
+    badgeIconContainer: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: 'rgba(255,255,255,0.3)',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: spacing.md,
-    },
-    badgeInfo: {
-        flex: 1,
+        marginBottom: spacing.md,
     },
     badgeName: {
-        fontWeight: '700',
-        color: '#1A1A1A',
         fontSize: 16,
-        marginBottom: 2,
+        fontWeight: '800',
+        color: '#fff',
+        marginBottom: 4,
     },
     badgeDescription: {
-        color: '#666',
         fontSize: 12,
+        color: 'rgba(255,255,255,0.9)',
         lineHeight: 16,
     },
-    xpNeeded: {
+    checkmark: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+    },
+    lockedBadgeCard: {
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        padding: spacing.lg,
+        minHeight: 180,
+        borderWidth: 2,
+        borderColor: '#E0E0E0',
+        borderStyle: 'dashed',
+    },
+    lockedIconContainer: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: '#F5F5F5',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.md,
+    },
+    lockedBadgeName: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#999',
+        marginBottom: 4,
+    },
+    lockedBadgeDescription: {
+        fontSize: 12,
+        color: '#BDBDBD',
+        lineHeight: 16,
+        marginBottom: spacing.sm,
+    },
+    xpNeededBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        marginTop: 'auto',
+    },
+    xpNeededText: {
         fontSize: 11,
         color: '#999',
-        marginTop: 2,
         fontWeight: '600',
     },
+    emptyState: {
+        alignItems: 'center',
+        padding: spacing.xxl,
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        borderWidth: 2,
+        borderColor: '#F0F0F0',
+        borderStyle: 'dashed',
+    },
     emptyText: {
-        color: '#888',
-        fontStyle: 'italic',
-        marginLeft: spacing.sm,
+        color: '#BDBDBD',
+        marginTop: spacing.md,
+        fontSize: 15,
+        fontWeight: '600',
     },
 });
 

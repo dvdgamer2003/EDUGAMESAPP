@@ -158,8 +158,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const register = async (userData: any) => {
+        console.log('🔵 AuthContext.register() called with:', {
+            name: userData.name,
+            email: userData.email,
+            language: userData.language
+        });
+
         try {
+            console.log('🔵 Sending registration request to:', ENDPOINTS.REGISTER);
+            console.log('🔵 Full request data:', userData);
+
             const response = await api.post(ENDPOINTS.REGISTER, userData);
+
+            console.log('✅ Registration response received:', {
+                status: response.status,
+                hasData: !!response.data,
+                hasToken: !!response.data?.token
+            });
+
             const { _id, name, email, role, token: authToken } = response.data;
 
             const userDataObj = { _id, name, email, role };
@@ -175,8 +191,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             await storeData('user_xp', '0');
             await storeData('user_streak', '0');
             await removeData('is_guest');
-        } catch (error) {
-            console.error('Registration failed', error);
+
+            console.log('✅ Registration complete, user stored');
+        } catch (error: any) {
+            console.error('❌ Registration error in AuthContext:', {
+                message: error.message,
+                isNetworkError: error.isNetworkError,
+                status: error.status,
+                responseData: error.data,
+                fullError: error
+            });
             throw error;
         }
     };

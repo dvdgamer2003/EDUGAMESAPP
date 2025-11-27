@@ -73,7 +73,19 @@ const LoginScreen = ({ navigation }: any) => {
             setSuccess(t('login.loginSuccess') || 'Login successful!');
             setVisible(true);
         } catch (e: any) {
-            const errorMessage = e?.response?.data?.message || t('login.loginFailed') || 'Login failed. Please try again.';
+            console.error('Login error:', e);
+
+            // Determine error type and show appropriate message
+            let errorMessage = t('login.loginFailed') || 'Login failed. Please try again.';
+
+            if (e?.isNetworkError || e?.message?.includes('Network error')) {
+                errorMessage = '🌐 Cannot connect to server. Please check:\n• Backend server is running\n• API URL is correct\n• Network connection is active';
+            } else if (e?.response?.data?.message) {
+                errorMessage = e.response.data.message;
+            } else if (e?.message) {
+                errorMessage = e.message;
+            }
+
             setError(errorMessage);
             setVisible(true);
         } finally {
@@ -249,7 +261,7 @@ const LoginScreen = ({ navigation }: any) => {
                 <Snackbar
                     visible={visible}
                     onDismiss={() => setVisible(false)}
-                    duration={3000}
+                    duration={5000}
                     action={{
                         label: 'OK',
                         onPress: () => setVisible(false),
@@ -257,7 +269,7 @@ const LoginScreen = ({ navigation }: any) => {
                     }}
                     style={{ backgroundColor: error ? theme.colors.error : theme.colors.primary }}
                 >
-                    {error || success}
+                    <Text style={{ color: '#fff' }}>{error || success}</Text>
                 </Snackbar>
             </KeyboardAvoidingView>
         </View>

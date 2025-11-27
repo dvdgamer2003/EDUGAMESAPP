@@ -8,9 +8,12 @@ const registerUser = async (req, res) => {
     try {
         const { name, email, password, language } = req.body;
 
+        console.log('📝 Registration attempt:', { email, name, language });
+
         const userExists = await User.findOne({ email });
 
         if (userExists) {
+            console.log('⚠️ User already exists:', email);
             return res.status(400).json({ message: 'User already exists' });
         }
 
@@ -22,6 +25,7 @@ const registerUser = async (req, res) => {
         });
 
         if (user) {
+            console.log('✅ User registered successfully:', { id: user._id, email: user.email });
             res.status(201).json({
                 _id: user._id,
                 name: user.name,
@@ -31,10 +35,11 @@ const registerUser = async (req, res) => {
                 refreshToken: generateRefreshToken(user._id)
             });
         } else {
+            console.log('❌ Failed to create user - invalid data');
             res.status(400).json({ message: 'Invalid user data' });
         }
     } catch (error) {
-        console.error('Error in registerUser:', error);
+        console.error('❌ Error in registerUser:', error);
         res.status(500).json({ message: 'Failed to register user', error: error.message });
     }
 };
