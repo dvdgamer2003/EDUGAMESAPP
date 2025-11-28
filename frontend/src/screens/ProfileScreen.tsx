@@ -75,7 +75,7 @@ const ProfileScreen = ({ navigation }: any) => {
     return (
         <View style={styles.container}>
             <ScrollView
-                contentContainerStyle={[styles.content, containerStyle]}
+                contentContainerStyle={[styles.content, containerStyle, { flexGrow: 1, flex: 0 }]}
                 showsVerticalScrollIndicator={false}
             >
                 {/* Header */}

@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import Constants from 'expo-constants';
 import { spacing } from '../../theme';
 
 interface SimulationViewerProps {
@@ -93,6 +94,13 @@ const SimulationViewer: React.FC<SimulationViewerProps> = ({ visible, title, fil
         if (Platform.OS === 'web') {
             return `/simulations/${fileName}`;
         }
+
+        // Use Expo host URI for development
+        const hostUri = Constants.expoConfig?.hostUri;
+        if (hostUri) {
+            return `http://${hostUri}/simulations/${fileName}`;
+        }
+
         return `http://localhost:8081/simulations/${fileName}`;
     };
 
