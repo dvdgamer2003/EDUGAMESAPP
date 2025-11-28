@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { Text, Surface, ActivityIndicator } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { spacing, borderRadius, theme } from '../theme';
 
 const StudentAnalyticsScreen = ({ route }: any) => {
+    const navigation = useNavigation();
     const { user } = useAuth();
     const [analytics, setAnalytics] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -53,7 +55,13 @@ const StudentAnalyticsScreen = ({ route }: any) => {
             />
 
             <ScrollView contentContainerStyle={styles.content}>
-                <Text style={styles.headerTitle}>My Analytics</Text>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>My Analytics</Text>
+                    <View style={{ width: 40 }} />
+                </View>
 
                 {/* Stats Grid */}
                 <View style={styles.statsGrid}>
@@ -141,11 +149,21 @@ const styles = StyleSheet.create({
         padding: spacing.lg,
         paddingTop: 60,
     },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: spacing.xl,
+    },
+    backButton: {
+        padding: 8,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 12,
+    },
     headerTitle: {
         fontSize: 28,
         fontWeight: 'bold',
         color: '#fff',
-        marginBottom: spacing.xl,
     },
     statsGrid: {
         flexDirection: 'row',

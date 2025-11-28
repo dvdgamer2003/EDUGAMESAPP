@@ -11,7 +11,7 @@ interface GradientBackgroundProps {
 
 const GradientBackground: React.FC<GradientBackgroundProps> = ({
     children,
-    colors = gradients.cool,
+    colors = gradients.premium_bg,
     style,
 }) => {
     return (

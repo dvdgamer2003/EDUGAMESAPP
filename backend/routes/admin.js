@@ -23,11 +23,21 @@ const {
     createInstitute,
     updateInstitute,
     deleteInstitute,
-    getGlobalAnalytics
+    getGlobalAnalytics,
+    getUsers,
+    createUser,
+    updateUser,
+    deleteUser
 } = require('../controllers/adminController');
 
 // All routes require authentication and admin role
 router.use(protect, adminOnly);
+
+// User Management Routes
+router.get('/users', getUsers);
+router.post('/users', createUser);
+router.put('/users/:id', updateUser);
+router.delete('/users/:id', deleteUser);
 
 // Class routes
 router.post('/classes', createClass);
@@ -49,7 +59,7 @@ router.post('/subchapters', createSubchapter);
 router.put('/subchapters/:id', updateSubchapter);
 router.delete('/subchapters/:id', deleteSubchapter);
 
-// Teacher routes
+// Teacher routes (Legacy)
 router.get('/teachers', getTeachers);
 router.post('/teachers', createTeacher);
 router.put('/teachers/:id', updateTeacher);

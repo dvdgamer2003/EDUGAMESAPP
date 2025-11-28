@@ -6,6 +6,122 @@ const Chapter = require('../models/Chapter');
 const Subchapter = require('../models/Subchapter');
 const QuizResult = require('../models/QuizResult');
 
+// --- User Management Controllers ---
+
+// @desc    Get all users (with filtering)
+// @route   GET /api/admin/users
+// @access  Private/Admin
+const getUsers = async (req, res) => {
+    try {
+        const { role, search } = req.query;
+        let query = {};
+
+        if (role) {
+            query.role = role;
+        }
+
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const users = await User.find(query).select('-password').sort({ createdAt: -1 });
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Create a new user
+// @route   POST /api/admin/users
+// @access  Private/Admin
+const createUser = async (req, res) => {
+    try {
+        const { name, email, password, role, status, selectedClass } = req.body;
+
+        const userExists = await User.findOne({ email });
+        if (userExists) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        const user = await User.create({
+            name,
+            email,
+            password,
+            role: role || 'student',
+            status: status || 'active',
+            selectedClass: selectedClass || null
+        });
+
+        res.status(201).json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            status: user.status
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Update user
+// @route   PUT /api/admin/users/:id
+// @access  Private/Admin
+const updateUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (user) {
+            user.name = req.body.name || user.name;
+            user.email = req.body.email || user.email;
+            user.role = req.body.role || user.role;
+            user.status = req.body.status || user.status;
+
+            if (req.body.selectedClass) {
+                user.selectedClass = req.body.selectedClass;
+            }
+
+            if (req.body.password) {
+                user.password = req.body.password;
+            }
+
+            const updatedUser = await user.save();
+            res.json({
+                _id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                status: updatedUser.status
+            });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Delete user
+// @route   DELETE /api/admin/users/:id
+// @access  Private/Admin
+const deleteUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (user) {
+            await user.deleteOne();
+            res.json({ message: 'User removed' });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // --- Institute Controllers ---
 
 // @desc    Create a new institute
@@ -261,7 +377,7 @@ const deleteSubchapter = async (req, res) => {
     }
 };
 
-// --- Teacher Controllers ---
+// --- Teacher Controllers (Legacy - can be replaced by generic User CRUD) ---
 
 const getTeachers = async (req, res) => {
     try {
@@ -335,6 +451,10 @@ const deleteTeacher = async (req, res) => {
 };
 
 module.exports = {
+    getUsers,
+    createUser,
+    updateUser,
+    deleteUser,
     createInstitute,
     getInstitutes,
     updateInstitute,

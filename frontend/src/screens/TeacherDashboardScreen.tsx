@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from '../context/AuthContext';
 import PendingUserCard from '../components/PendingUserCard';
 import api from '../services/api';
 import { spacing, theme } from '../theme';
+import GradientBackground from '../components/ui/GradientBackground';
+import CustomCard from '../components/ui/CustomCard';
 
 const TeacherDashboardScreen = () => {
     const navigation = useNavigation();
@@ -46,82 +48,80 @@ const TeacherDashboardScreen = () => {
     };
 
     return (
-        <View style={styles.container}>
-            <LinearGradient
-                colors={['#fbc2eb', '#a6c1ee']}
-                style={styles.background}
-            />
-
-            <View style={styles.header}>
-                <View style={styles.headerLeft}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color="#333" />
+        <GradientBackground>
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <View style={styles.headerLeft}>
+                        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                            <Ionicons name="arrow-back" size={24} color="#fff" />
+                        </TouchableOpacity>
+                        <View>
+                            <Text style={styles.welcomeText}>Approvals</Text>
+                            <Text style={styles.subText}>Manage student requests</Text>
+                        </View>
+                    </View>
+                    <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+                        <Ionicons name="log-out-outline" size={24} color="#fff" />
                     </TouchableOpacity>
-                    <View>
-                        <Text style={styles.welcomeText}>Teacher Dashboard</Text>
-                        <Text style={styles.subText}>Manage your students</Text>
-                    </View>
                 </View>
-                <TouchableOpacity onPress={logout}>
-                    <Ionicons name="log-out-outline" size={24} color={theme.colors.primary} />
-                </TouchableOpacity>
+
+                <ScrollView
+                    contentContainerStyle={styles.content}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />}
+                >
+                    <View style={styles.sectionHeader}>
+                        <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons name="account-clock" size={24} color="#fff" />
+                        </View>
+                        <Text style={styles.sectionTitle}>Pending Requests</Text>
+                        {pendingUsers.length > 0 && (
+                            <View style={styles.badge}>
+                                <Text style={styles.badgeText}>{pendingUsers.length}</Text>
+                            </View>
+                        )}
+                    </View>
+
+                    {loading ? (
+                        <ActivityIndicator color="#fff" style={{ marginTop: 40 }} size="large" />
+                    ) : pendingUsers.length === 0 ? (
+                        <Animated.View entering={FadeInDown.delay(200)} style={styles.emptyState}>
+                            <View style={styles.emptyIconContainer}>
+                                <MaterialCommunityIcons name="check-all" size={60} color="rgba(255,255,255,0.6)" />
+                            </View>
+                            <Text style={styles.emptyText}>All Caught Up!</Text>
+                            <Text style={styles.emptySubtext}>No pending student approvals at the moment.</Text>
+                        </Animated.View>
+                    ) : (
+                        pendingUsers.map((user, index) => (
+                            <Animated.View
+                                key={user._id}
+                                entering={FadeInDown.delay(index * 100).duration(400)}
+                            >
+                                <PendingUserCard
+                                    user={user}
+                                    onApprove={handleApprove}
+                                    onReject={handleReject}
+                                />
+                            </Animated.View>
+                        ))
+                    )}
+                </ScrollView>
             </View>
-
-            <ScrollView
-                contentContainerStyle={styles.content}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-            >
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Pending Approvals</Text>
-                    <View style={styles.badge}>
-                        <Text style={styles.badgeText}>{pendingUsers.length}</Text>
-                    </View>
-                </View>
-
-                {loading ? (
-                    <ActivityIndicator style={{ marginTop: 20 }} />
-                ) : pendingUsers.length === 0 ? (
-                    <View style={styles.emptyState}>
-                        <Text style={styles.emptyText}>No pending approvals</Text>
-                    </View>
-                ) : (
-                    pendingUsers.map(user => (
-                        <PendingUserCard
-                            key={user._id}
-                            user={user}
-                            onApprove={handleApprove}
-                            onReject={handleReject}
-                        />
-                    ))
-                )}
-            </ScrollView>
-        </View>
+        </GradientBackground>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    background: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
+        paddingTop: 60,
     },
     header: {
-        padding: spacing.xl,
-        paddingTop: 60,
-        backgroundColor: '#fff',
+        paddingHorizontal: spacing.xl,
+        marginBottom: spacing.lg,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
     },
     headerLeft: {
         flexDirection: 'row',
@@ -129,36 +129,52 @@ const styles = StyleSheet.create({
         gap: spacing.md,
     },
     backButton: {
-        padding: 4,
+        padding: 8,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 12,
+    },
+    logoutButton: {
+        padding: 8,
+        backgroundColor: 'rgba(239, 68, 68, 0.2)', // Red tint
+        borderRadius: 12,
     },
     welcomeText: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#fff',
     },
     subText: {
         fontSize: 14,
-        color: '#666',
+        color: 'rgba(255,255,255,0.8)',
     },
     content: {
         padding: spacing.lg,
+        paddingBottom: 100,
     },
     sectionHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: spacing.md,
+        marginBottom: spacing.lg,
         gap: spacing.sm,
     },
+    iconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     sectionTitle: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#fff',
     },
     badge: {
-        backgroundColor: theme.colors.primary,
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 10,
+        backgroundColor: '#EF4444',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
     },
     badgeText: {
         color: '#fff',
@@ -166,12 +182,31 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     emptyState: {
-        padding: spacing.xl,
         alignItems: 'center',
+        marginTop: 60,
+        padding: 20,
+    },
+    emptyIconContainer: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
     },
     emptyText: {
-        color: '#999',
+        color: '#fff',
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 8,
+    },
+    emptySubtext: {
+        color: 'rgba(255,255,255,0.7)',
         fontSize: 16,
+        textAlign: 'center',
     },
 });
 

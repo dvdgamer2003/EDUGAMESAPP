@@ -112,6 +112,7 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
                             let iconName = 'circle';
                             if (route.name === 'HomeTab') iconName = isFocused ? 'home' : 'home-outline';
                             else if (route.name === 'Learn') iconName = isFocused ? 'school' : 'school-outline';
+                            else if (route.name === 'Tasks') iconName = isFocused ? 'checkbox-marked-circle' : 'checkbox-marked-circle-outline';
                             else if (route.name === 'Games') iconName = isFocused ? 'gamepad-variant' : 'gamepad-variant-outline';
                             else if (route.name === 'Settings') iconName = isFocused ? 'cog' : 'cog-outline';
 

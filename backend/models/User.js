@@ -16,7 +16,10 @@ const userSchema = new mongoose.Schema({
 
     teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     assignments: [{
+        type: { type: String, enum: ['chapter', 'quiz', 'teacherChapter'], default: 'chapter' },
         chapterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Chapter' },
+        quizId: { type: mongoose.Schema.Types.ObjectId, ref: 'TeacherQuiz' },
+        teacherChapterId: { type: mongoose.Schema.Types.ObjectId, ref: 'TeacherChapter' },
         assignedAt: { type: Date, default: Date.now },
         status: { type: String, enum: ['pending', 'completed'], default: 'pending' }
     }],

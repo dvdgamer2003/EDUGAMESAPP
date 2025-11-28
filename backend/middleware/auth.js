@@ -40,4 +40,20 @@ const admin = (req, res, next) => {
     }
 };
 
-module.exports = { protect, admin };
+const teacherOnly = (req, res, next) => {
+    if (req.user && (req.user.role === 'teacher' || req.user.role === 'admin')) {
+        next();
+    } else {
+        res.status(401).json({ message: 'Not authorized as a teacher' });
+    }
+};
+
+const instituteOnly = (req, res, next) => {
+    if (req.user && (req.user.role === 'institute' || req.user.role === 'admin')) {
+        next();
+    } else {
+        res.status(401).json({ message: 'Not authorized as an institute' });
+    }
+};
+
+module.exports = { protect, admin, teacherOnly, instituteOnly };

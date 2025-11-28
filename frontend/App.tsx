@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/context/AuthContext';
@@ -7,7 +7,9 @@ import { ThemeProvider } from './src/context/ThemeContext';
 import { SyncProvider } from './src/context/SyncContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import { theme } from './src/theme';
-import { LogBox, Platform } from 'react-native';
+import { LogBox, View, ActivityIndicator } from 'react-native';
+import { useFonts } from 'expo-font';
+import { MaterialCommunityIcons, Ionicons, MaterialIcons } from '@expo/vector-icons';
 
 // Completely suppress all console warnings in development
 if (__DEV__) {
@@ -49,6 +51,20 @@ if (__DEV__) {
 LogBox.ignoreAllLogs(true);
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    ...MaterialCommunityIcons.font,
+    ...Ionicons.font,
+    ...MaterialIcons.font,
+  });
+
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+        <ActivityIndicator size="large" color="#6366F1" />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaProvider>
       <ThemeProvider>

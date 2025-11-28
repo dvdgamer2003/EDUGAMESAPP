@@ -128,6 +128,14 @@ const HomeScreen = ({ navigation }: any) => {
             gradient: ['#FFD700', '#FFA500'],
             onPress: () => navigation.navigate('Leaderboard'),
         },
+        {
+            id: '8',
+            title: 'Classroom',
+            icon: 'school-outline',
+            color: '#A78BFA',
+            gradient: ['#8B5CF6', '#A78BFA'],
+            onPress: () => navigation.navigate('StudentOnlineAssignments'),
+        },
     ];
 
     const getSimIcon = (subject: string) => {

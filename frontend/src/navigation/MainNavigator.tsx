@@ -9,6 +9,9 @@ import GamesScreen from '../screens/GamesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import NotificationScreen from '../screens/NotificationScreen';
 import StudentAnalyticsScreen from '../screens/StudentAnalyticsScreen';
+import StudentTasksScreen from '../screens/StudentTasksScreen';
+import StudentOnlineAssignmentsScreen from '../screens/StudentOnlineAssignmentsScreen';
+import TeacherChapterViewerScreen from '../screens/TeacherChapterViewerScreen';
 import LearnNavigator from './LearnNavigator';
 
 // Import game screens
@@ -29,6 +32,7 @@ import TeacherDashboard from '../screens/TeacherDashboard';
 import LeaderboardScreen from '../screens/LeaderboardScreen';
 import ScienceScreen from '../screens/ScienceScreen';
 import QuizScreen from '../screens/QuizScreen';
+import QuizResult from '../screens/QuizResult';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -43,6 +47,7 @@ const TabNavigator = () => {
         >
             <Tab.Screen name="HomeTab" component={HomeScreen} />
             <Tab.Screen name="Learn" component={LearnNavigator} />
+            <Tab.Screen name="Tasks" component={StudentTasksScreen} />
             <Tab.Screen name="Games" component={GamesScreen} />
             <Tab.Screen name="Settings" component={SettingsScreenNew} />
         </Tab.Navigator>
@@ -74,8 +79,11 @@ const MainNavigator = () => {
             <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
             <Stack.Screen name="Science" component={ScienceScreen} />
             <Stack.Screen name="Quiz" component={QuizScreen} />
+            <Stack.Screen name="QuizResult" component={QuizResult} />
             <Stack.Screen name="Notifications" component={NotificationScreen} />
             <Stack.Screen name="StudentAnalytics" component={StudentAnalyticsScreen} />
+            <Stack.Screen name="StudentOnlineAssignments" component={StudentOnlineAssignmentsScreen} />
+            <Stack.Screen name="TeacherChapterViewer" component={TeacherChapterViewerScreen} />
         </Stack.Navigator>
     );
 };

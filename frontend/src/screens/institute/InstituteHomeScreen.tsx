@@ -1,188 +1,104 @@
-import React, { useEffect, useState } from 'react';
-import { View, ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { Text, Surface } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import GradientBackground from '../../components/ui/GradientBackground';
-import CustomCard from '../../components/ui/CustomCard';
 import { useAuth } from '../../context/AuthContext';
-import api from '../../services/api';
+import { theme } from '../../theme';
 
 const InstituteHomeScreen = () => {
     const navigation = useNavigation();
-    const { logout, user } = useAuth();
-    const [stats, setStats] = useState({
-        totalTeachers: 0,
-        totalStudents: 0,
-        pendingApprovals: 0
-    });
-
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const response = await api.get('/institute/analytics');
-                setStats({
-                    totalTeachers: response.data.totalTeachers,
-                    totalStudents: response.data.totalStudents,
-                    pendingApprovals: response.data.pendingApprovals
-                });
-            } catch (error) {
-                console.error('Failed to fetch institute stats:', error);
-            }
-        };
-
-        fetchStats();
-    }, []);
+    const { user, logout } = useAuth();
 
     const menuItems = [
-        { title: 'Approvals', icon: 'checkmark-circle', screen: 'InstituteApprovals', color: '#8B5CF6', badge: stats.pendingApprovals },
-        { title: 'Teachers', icon: 'people', screen: 'TeacherList', color: '#4F46E5' },
-        { title: 'Analytics', icon: 'bar-chart', screen: 'InstituteAnalytics', color: '#10B981' },
-        { title: 'Assign Syllabus', icon: 'book', screen: 'SyllabusAssign', color: '#F59E0B' },
-        { title: 'Upload Content', icon: 'cloud-upload', screen: 'ContentUpload', color: '#EC4899' },
-        { title: 'Quiz Manager', icon: 'help-circle', screen: 'QuizManager', color: '#8B5CF6' },
+        { title: 'Manage Teachers', icon: 'people', screen: 'InstituteTeacherManager', color: '#8B5CF6' },
+        { title: 'Institute Analytics', icon: 'stats-chart', screen: 'InstituteAnalytics', color: '#3B82F6' },
+        { title: 'Pending Approvals', icon: 'time', screen: 'InstituteDashboard', color: '#F59E0B' }, // Reusing existing dashboard for approvals
     ];
 
     return (
         <GradientBackground>
-            <ScrollView contentContainerStyle={styles.container}>
+            <View style={styles.container}>
                 <View style={styles.header}>
                     <View>
-                        <Text style={styles.title}>Institute Dashboard</Text>
-                        <Text style={styles.subtitle}>Welcome, {user?.name}</Text>
+                        <Text style={styles.greeting}>Welcome,</Text>
+                        <Text style={styles.name}>{user?.name || 'Institute Admin'}</Text>
                     </View>
-                    <View style={styles.headerActions}>
-                        <TouchableOpacity
-                            onPress={() => (navigation as any).navigate('Notifications')}
-                            style={styles.iconButton}
-                        >
-                            <Ionicons name="notifications-outline" size={24} color="#fff" />
-                            <View style={styles.notificationBadge} />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={logout} style={styles.iconButton}>
-                            <Ionicons name="log-out-outline" size={24} color="#EF4444" />
-                        </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity onPress={logout} style={styles.logoutBtn}>
+                        <Ionicons name="log-out-outline" size={24} color="#fff" />
+                    </TouchableOpacity>
                 </View>
 
-                {/* Quick Stats Row */}
-                <View style={styles.statsRow}>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statValue}>{stats.totalTeachers}</Text>
-                        <Text style={styles.statLabel}>Teachers</Text>
-                    </View>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statValue}>{stats.totalStudents}</Text>
-                        <Text style={styles.statLabel}>Students</Text>
-                    </View>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statValue}>{stats.pendingApprovals}</Text>
-                        <Text style={styles.statLabel}>Pending</Text>
-                    </View>
-                </View>
-
-                <View style={styles.grid}>
-                    {menuItems.map((item, index) => (
-                        <TouchableOpacity
-                            key={index}
-                            style={styles.cardWrapper}
-                            onPress={() => (navigation as any).navigate(item.screen)}
-                        >
-                            <CustomCard style={styles.card}>
-                                <View style={[styles.iconContainer, { backgroundColor: item.color + '20' }]}>
-                                    <Ionicons name={item.icon as any} size={32} color={item.color} />
-                                </View>
-                                <Text style={styles.cardTitle}>{item.title}</Text>
-                                {item.badge ? (
-                                    <View style={styles.cardBadge}>
-                                        <Text style={styles.cardBadgeText}>{item.badge}</Text>
+                <ScrollView contentContainerStyle={styles.content}>
+                    <View style={styles.grid}>
+                        {menuItems.map((item, index) => (
+                            <TouchableOpacity
+                                key={index}
+                                style={styles.cardContainer}
+                                onPress={() => (navigation as any).navigate(item.screen)}
+                            >
+                                <Surface style={styles.card} elevation={2}>
+                                    <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
+                                        <Ionicons name={item.icon as any} size={32} color="#fff" />
                                     </View>
-                                ) : null}
-                            </CustomCard>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            </ScrollView>
+                                    <Text style={styles.cardTitle}>{item.title}</Text>
+                                </Surface>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </ScrollView>
+            </View>
         </GradientBackground>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        padding: 20,
+        flex: 1,
         paddingTop: 60,
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 20,
-    },
-    headerActions: {
-        flexDirection: 'row',
-        gap: 10,
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#fff',
-    },
-    subtitle: {
-        fontSize: 16,
-        color: '#E5E7EB',
-        marginTop: 4,
-    },
-    iconButton: {
-        padding: 10,
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        borderRadius: 12,
-        position: 'relative',
-    },
-    notificationBadge: {
-        position: 'absolute',
-        top: 8,
-        right: 8,
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#EF4444',
-    },
-    statsRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+        paddingHorizontal: 20,
         marginBottom: 30,
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        borderRadius: 16,
-        padding: 15,
     },
-    statItem: {
-        alignItems: 'center',
-        flex: 1,
+    greeting: {
+        fontSize: 16,
+        color: 'rgba(255,255,255,0.8)',
     },
-    statValue: {
-        fontSize: 20,
+    name: {
+        fontSize: 24,
         fontWeight: 'bold',
         color: '#fff',
     },
-    statLabel: {
-        fontSize: 12,
-        color: '#E5E7EB',
-        marginTop: 2,
+    logoutBtn: {
+        padding: 8,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 12,
+    },
+    content: {
+        paddingHorizontal: 20,
+        paddingBottom: 40,
     },
     grid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
     },
-    cardWrapper: {
+    cardContainer: {
         width: '48%',
-        marginBottom: 20,
+        marginBottom: 16,
     },
     card: {
-        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 20,
         padding: 20,
-        height: 150,
+        alignItems: 'center',
+        height: 160,
         justifyContent: 'center',
-        position: 'relative',
     },
     iconContainer: {
         width: 60,
@@ -190,27 +106,13 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 15,
+        marginBottom: 16,
     },
     cardTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#1F2937',
+        color: '#333',
         textAlign: 'center',
-    },
-    cardBadge: {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        backgroundColor: '#EF4444',
-        borderRadius: 10,
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-    },
-    cardBadgeText: {
-        color: '#fff',
-        fontSize: 10,
-        fontWeight: 'bold',
     },
 });
 

@@ -10,6 +10,11 @@ import TeacherQuizCreatorScreen from '../screens/teacher/TeacherQuizCreatorScree
 import TeacherDashboardScreen from '../screens/TeacherDashboardScreen';
 import NotificationScreen from '../screens/NotificationScreen';
 import StudentAnalyticsScreen from '../screens/StudentAnalyticsScreen';
+import TeacherAnalyticsScreen from '../screens/teacher/TeacherAnalyticsScreen';
+import TeacherClassroomScreen from '../screens/teacher/TeacherClassroomScreen';
+import QuizScreen from '../screens/QuizScreen';
+import QuizResult from '../screens/QuizResult';
+import TeacherChapterViewerScreen from '../screens/TeacherChapterViewerScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,6 +31,11 @@ const TeacherNavigator = () => {
             <Stack.Screen name="TeacherApprovals" component={TeacherDashboardScreen} />
             <Stack.Screen name="Notifications" component={NotificationScreen} />
             <Stack.Screen name="StudentAnalytics" component={StudentAnalyticsScreen} />
+            <Stack.Screen name="TeacherAnalytics" component={TeacherAnalyticsScreen} />
+            <Stack.Screen name="TeacherClassroom" component={TeacherClassroomScreen} />
+            <Stack.Screen name="Quiz" component={QuizScreen} />
+            <Stack.Screen name="QuizResult" component={QuizResult} />
+            <Stack.Screen name="TeacherChapterViewer" component={TeacherChapterViewerScreen} />
         </Stack.Navigator>
     );
 };

@@ -39,6 +39,8 @@ const TeacherHomeScreen = () => {
         { title: 'Assign Chapters', icon: 'book', screen: 'ChapterAssign', color: '#F59E0B' },
         { title: 'Content Manager', icon: 'folder-open', screen: 'TeacherContentManager', color: '#10B981' },
         { title: 'Quiz Creator', icon: 'create', screen: 'TeacherQuizCreator', color: '#EC4899' },
+        { title: 'Class Analytics', icon: 'stats-chart', screen: 'TeacherAnalytics', color: '#3B82F6' },
+        { title: 'Classroom', icon: 'school', screen: 'TeacherClassroom', color: '#6366F1' },
     ];
 
     return (

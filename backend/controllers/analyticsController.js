@@ -6,36 +6,54 @@ exports.getStudentAnalytics = async (req, res) => {
     try {
         const { studentId } = req.params;
 
-        // Ensure requestor has permission (Admin, Institute, Teacher of student, or Student themselves)
-        // For simplicity, allowing if authenticated for now, but should add checks
+        const student = await User.findById(studentId).select('-password')
+            .populate('assignments.quizId')
+            .populate('assignments.chapterId')
+            .populate('assignments.teacherChapterId');
 
-        const student = await User.findById(studentId).select('-password');
         if (!student) {
             return res.status(404).json({ message: 'Student not found' });
         }
 
-        // Mocking some data if models don't exist yet, or aggregating from User model
+        // Calculate stats from assignments
+        const completedAssignments = student.assignments.filter(a => a.status === 'completed');
+        const pendingAssignments = student.assignments.filter(a => a.status === 'pending');
+
+        // Calculate average score (mock for now as we don't store scores in assignments yet, only status)
+        // Future: Add score field to assignments or separate QuizResult model
+        const averageScore = 0;
+
+        // Recent Activity
+        const recentActivity = student.assignments
+            .sort((a, b) => new Date(b.assignedAt) - new Date(a.assignedAt))
+            .slice(0, 5)
+            .map(a => ({
+                type: a.type,
+                title: a.quizId?.title || a.chapterId?.title || a.teacherChapterId?.title || 'Unknown Task',
+                date: a.assignedAt,
+                status: a.status
+            }));
+
+        // XP History (Mock for now, as we don't track daily XP history yet)
+        const xpHistory = [
+            { date: 'Mon', xp: 0 },
+            { date: 'Tue', xp: 0 },
+            { date: 'Wed', xp: 0 },
+            { date: 'Thu', xp: 0 },
+            { date: 'Fri', xp: 0 },
+            { date: 'Sat', xp: 0 },
+            { date: 'Sun', xp: student.xp || 0 } // Show current XP as Sunday for now
+        ];
+
         const analytics = {
             xp: student.xp || 0,
             streak: student.streak || 0,
             level: student.level || 1,
-            // These would normally come from related collections
-            lessonsCompleted: 12, // Placeholder
-            quizzesTaken: 5,      // Placeholder
-            averageScore: 85,     // Placeholder
-            recentActivity: [
-                { type: 'lesson', title: 'Algebra Basics', date: new Date(Date.now() - 86400000) },
-                { type: 'quiz', title: 'Science Quiz 1', score: 90, date: new Date(Date.now() - 172800000) }
-            ],
-            xpHistory: [
-                { date: 'Mon', xp: 20 },
-                { date: 'Tue', xp: 45 },
-                { date: 'Wed', xp: 30 },
-                { date: 'Thu', xp: 60 },
-                { date: 'Fri', xp: 50 },
-                { date: 'Sat', xp: 80 },
-                { date: 'Sun', xp: 40 }
-            ]
+            lessonsCompleted: completedAssignments.length,
+            quizzesTaken: completedAssignments.filter(a => a.type === 'quiz').length,
+            averageScore: averageScore,
+            recentActivity,
+            xpHistory
         };
 
         res.json(analytics);
@@ -46,6 +64,38 @@ exports.getStudentAnalytics = async (req, res) => {
 };
 
 exports.getClassAnalytics = async (req, res) => {
-    // Placeholder for class-level analytics
-    res.json({ message: 'Class analytics not implemented yet' });
+    try {
+        const { classId } = req.params;
+
+        let query = { role: 'student' };
+        if (classId && classId !== 'all') {
+            query.selectedClass = classId;
+        }
+
+        const students = await User.find(query).select('-password');
+
+        const classAnalytics = students.map(student => {
+            const completed = student.assignments ? student.assignments.filter(a => a.status === 'completed').length : 0;
+            const pending = student.assignments ? student.assignments.filter(a => a.status === 'pending').length : 0;
+
+            return {
+                id: student._id,
+                name: student.name,
+                email: student.email,
+                xp: student.xp || 0,
+                streak: student.streak || 0,
+                completedTasks: completed,
+                pendingTasks: pending,
+                lastActive: student.updatedAt // Approximate last active
+            };
+        });
+
+        // Sort by XP (Leaderboard style)
+        classAnalytics.sort((a, b) => b.xp - a.xp);
+
+        res.json(classAnalytics);
+    } catch (error) {
+        console.error('Error fetching class analytics:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
 };

@@ -40,6 +40,7 @@ app.use('/api/progress', require('./routes/progress'));
 app.use('/api/approval', require('./routes/approval'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
+app.use('/api/student', require('./routes/studentRoutes'));
 
 // Base route
 app.get('/', (req, res) => {

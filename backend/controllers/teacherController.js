@@ -1,257 +1,319 @@
 const User = require('../models/User');
-const TeacherContent = require('../models/TeacherContent');
-const QuizResult = require('../models/QuizResult');
+const TeacherQuiz = require('../models/TeacherQuiz');
 const Chapter = require('../models/Chapter');
+const TeacherChapter = require('../models/TeacherChapter');
 
-// @desc    Create a student account
-// @route   POST /api/teacher/student
+// @desc    Get teacher stats
+// @route   GET /api/teacher/stats
 // @access  Private/Teacher
-const createStudent = async (req, res) => {
+const getTeacherStats = async (req, res) => {
     try {
-        const { name, email, password, grade } = req.body;
-        const teacherId = req.user._id;
-        const instituteId = req.user.instituteId;
-
-        const userExists = await User.findOne({ email });
-        if (userExists) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-
-        const student = await User.create({
-            name,
-            email,
-            password,
-            role: 'student',
-            teacherId,
-            instituteId,
-            selectedClass: grade,
-            status: 'active'
-        });
-
-        res.status(201).json({
-            _id: student._id,
-            name: student.name,
-            email: student.email,
-            grade: student.selectedClass,
-            status: student.status
+        // Mock stats for now, replace with real logic later
+        res.json({
+            totalStudents: 0,
+            pendingApprovals: 0,
+            averageAttendance: '0%'
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-// @desc    Get all students for the teacher
+// @desc    Create a new quiz
+// @route   POST /api/teacher/quiz
+// @access  Private/Teacher
+const createQuiz = async (req, res) => {
+    try {
+        const { title, description, classNumber, subject, questions } = req.body;
+
+        const quiz = await TeacherQuiz.create({
+            title,
+            description,
+            teacherId: req.user._id,
+            classNumber,
+            subject,
+            questions
+        });
+
+        // Auto-assign to all students in the class
+        const students = await User.find({ role: 'student', selectedClass: classNumber });
+
+        const updates = students.map(student => {
+            student.assignments.push({
+                type: 'quiz',
+                quizId: quiz._id,
+                assignedAt: new Date(),
+                status: 'pending'
+            });
+            return student.save();
+        });
+
+        await Promise.all(updates);
+
+        res.status(201).json(quiz);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Assign quiz to students
+// @route   POST /api/teacher/assign-quiz
+// @access  Private/Teacher
+const assignQuiz = async (req, res) => {
+    try {
+        const { quizId, studentIds, classNumber } = req.body;
+
+        let query = { role: 'student' };
+        if (studentIds && studentIds.length > 0) {
+            query._id = { $in: studentIds };
+        } else if (classNumber) {
+            query.selectedClass = classNumber;
+        } else {
+            return res.status(400).json({ message: 'Please provide studentIds or classNumber' });
+        }
+
+        const students = await User.find(query);
+
+        const updates = students.map(student => {
+            // Check if already assigned
+            const alreadyAssigned = student.assignments.some(
+                a => a.type === 'quiz' && a.quizId && a.quizId.toString() === quizId
+            );
+
+            if (!alreadyAssigned) {
+                student.assignments.push({
+                    type: 'quiz',
+                    quizId: quizId,
+                    assignedAt: new Date(),
+                    status: 'pending'
+                });
+                return student.save();
+            }
+        });
+
+        await Promise.all(updates);
+
+        res.json({ message: `Quiz assigned to ${updates.length} students` });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Assign chapter to students
+// @route   POST /api/teacher/assign-chapter
+// @access  Private/Teacher
+const assignChapter = async (req, res) => {
+    try {
+        const { chapterId, studentIds, classNumber } = req.body;
+
+        let query = { role: 'student' };
+        if (studentIds && studentIds.length > 0) {
+            query._id = { $in: studentIds };
+        } else if (classNumber) {
+            query.selectedClass = classNumber;
+        } else {
+            return res.status(400).json({ message: 'Please provide studentIds or classNumber' });
+        }
+
+        const students = await User.find(query);
+
+        const updates = students.map(student => {
+            // Check if already assigned
+            const alreadyAssigned = student.assignments.some(
+                a => a.type === 'chapter' && a.chapterId && a.chapterId.toString() === chapterId
+            );
+
+            if (!alreadyAssigned) {
+                student.assignments.push({
+                    type: 'chapter',
+                    chapterId: chapterId,
+                    assignedAt: new Date(),
+                    status: 'pending'
+                });
+                return student.save();
+            }
+        });
+
+        await Promise.all(updates);
+
+        res.json({ message: `Chapter assigned to ${updates.length} students` });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Create a new custom chapter
+// @route   POST /api/teacher/chapter
+// @access  Private/Teacher
+const createChapter = async (req, res) => {
+    try {
+        const { title, content, classNumber, subject } = req.body;
+
+        const chapter = await TeacherChapter.create({
+            title,
+            content,
+            teacherId: req.user._id,
+            classNumber,
+            subject
+        });
+
+        // Auto-assign to all students in the class
+        const students = await User.find({ role: 'student', selectedClass: classNumber });
+
+        const updates = students.map(student => {
+            student.assignments.push({
+                type: 'teacherChapter',
+                teacherChapterId: chapter._id,
+                assignedAt: new Date(),
+                status: 'pending'
+            });
+            return student.save();
+        });
+
+        await Promise.all(updates);
+
+        res.status(201).json(chapter);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Assign custom chapter to students
+// @route   POST /api/teacher/assign-custom-chapter
+// @access  Private/Teacher
+const assignCustomChapter = async (req, res) => {
+    try {
+        const { chapterId, studentIds, classNumber } = req.body;
+
+        let query = { role: 'student' };
+        if (studentIds && studentIds.length > 0) {
+            query._id = { $in: studentIds };
+        } else if (classNumber) {
+            query.selectedClass = classNumber;
+        } else {
+            return res.status(400).json({ message: 'Please provide studentIds or classNumber' });
+        }
+
+        const students = await User.find(query);
+
+        const updates = students.map(student => {
+            // Check if already assigned
+            const alreadyAssigned = student.assignments.some(
+                a => a.type === 'teacherChapter' && a.teacherChapterId && a.teacherChapterId.toString() === chapterId
+            );
+
+            if (!alreadyAssigned) {
+                student.assignments.push({
+                    type: 'teacherChapter',
+                    teacherChapterId: chapterId,
+                    assignedAt: new Date(),
+                    status: 'pending'
+                });
+                return student.save();
+            }
+        });
+
+        await Promise.all(updates);
+
+        res.json({ message: `Custom chapter assigned to ${updates.length} students` });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get all content created by teacher
+// @route   GET /api/teacher/content
+// @access  Private/Teacher
+const getMyContent = async (req, res) => {
+    try {
+        const quizzes = await TeacherQuiz.find({ teacherId: req.user._id }).sort({ createdAt: -1 });
+        const chapters = await TeacherChapter.find({ teacherId: req.user._id }).sort({ createdAt: -1 });
+
+        const content = [
+            ...quizzes.map(q => ({ ...q.toObject(), type: 'quiz' })),
+            ...chapters.map(c => ({ ...c.toObject(), type: 'teacherChapter' }))
+        ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        res.json(content);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get all students
 // @route   GET /api/teacher/students
 // @access  Private/Teacher
 const getStudents = async (req, res) => {
     try {
-        const teacherId = req.user._id;
-        const students = await User.find({ role: 'student', teacherId }).select('-password');
+        // In a real app, you might want to filter by the teacher's assigned classes
+        // For now, we'll return all students
+        const students = await User.find({ role: 'student' }).select('-password').sort({ createdAt: -1 });
         res.json(students);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-// @desc    Update student
-// @route   PUT /api/teacher/student/:id
+// @desc    Delete a quiz
+// @route   DELETE /api/teacher/quiz/:id
 // @access  Private/Teacher
-const updateStudent = async (req, res) => {
+const deleteQuiz = async (req, res) => {
     try {
-        const student = await User.findById(req.params.id);
+        const quiz = await TeacherQuiz.findById(req.params.id);
 
-        if (student && student.teacherId.toString() === req.user._id.toString()) {
-            student.name = req.body.name || student.name;
-            student.email = req.body.email || student.email;
-            student.selectedClass = req.body.grade || student.selectedClass;
-            student.status = req.body.status || student.status;
-
-            if (req.body.password) {
-                student.password = req.body.password;
-            }
-
-            const updatedStudent = await student.save();
-            res.json({
-                _id: updatedStudent._id,
-                name: updatedStudent.name,
-                email: updatedStudent.email,
-                grade: updatedStudent.selectedClass,
-                status: updatedStudent.status
-            });
-        } else {
-            res.status(404).json({ message: 'Student not found or not authorized' });
-        }
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-// @desc    Delete student
-// @route   DELETE /api/teacher/student/:id
-// @access  Private/Teacher
-const deleteStudent = async (req, res) => {
-    try {
-        const student = await User.findById(req.params.id);
-
-        if (student && student.teacherId.toString() === req.user._id.toString()) {
-            await student.deleteOne();
-            res.json({ message: 'Student removed' });
-        } else {
-            res.status(404).json({ message: 'Student not found or not authorized' });
-        }
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-// @desc    Assign chapter to student(s)
-// @route   POST /api/teacher/assign
-// @access  Private/Teacher
-const assignChapter = async (req, res) => {
-    try {
-        const { studentIds, chapterId } = req.body;
-
-        // Verify chapter exists
-        const chapter = await Chapter.findById(chapterId);
-        if (!chapter) {
-            return res.status(404).json({ message: 'Chapter not found' });
+        if (!quiz) {
+            return res.status(404).json({ message: 'Quiz not found' });
         }
 
-        // Update multiple students
-        await User.updateMany(
-            { _id: { $in: studentIds }, teacherId: req.user._id },
-            {
-                $addToSet: {
-                    assignments: {
-                        chapterId,
-                        assignedAt: new Date(),
-                        status: 'pending'
-                    }
-                }
-            }
-        );
-
-        res.json({ message: 'Chapter assigned successfully' });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-// @desc    Get student analytics
-// @route   GET /api/teacher/analytics/:studentId
-// @access  Private/Teacher
-const getStudentAnalytics = async (req, res) => {
-    try {
-        const student = await User.findById(req.params.studentId);
-
-        if (!student || student.teacherId.toString() !== req.user._id.toString()) {
-            return res.status(404).json({ message: 'Student not found or not authorized' });
+        if (quiz.teacherId.toString() !== req.user._id.toString()) {
+            return res.status(401).json({ message: 'Not authorized' });
         }
 
-        // Quiz History
-        const quizResults = await QuizResult.find({ userId: student._id }).sort({ date: -1 });
-
-        // Weak Topics (simplified: topics with score < 60%)
-        // Assuming we can derive topics from quiz results or another way. 
-        // For now, let's just list quizzes with low scores.
-        const weakAreas = quizResults
-            .filter(q => (q.score / q.totalQuestions) < 0.6)
-            .map(q => q.quizId); // Ideally map to topic name
-
-        // Completed Lessons (from assignments or progress)
-        // Using assignments for now
-        const completedLessons = student.assignments ? student.assignments.filter(a => a.status === 'completed').length : 0;
-
-        // Performance Trend (last 5 quiz scores)
-        const performanceTrend = quizResults.slice(0, 5).map(q => ({
-            date: q.date,
-            score: (q.score / q.totalQuestions) * 100
-        }));
-
-        res.json({
-            xp: student.xp,
-            streak: student.streak,
-            completedLessons,
-            quizHistory: quizResults,
-            weakAreas,
-            performanceTrend
-        });
+        await quiz.deleteOne();
+        res.json({ message: 'Quiz removed' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-// @desc    Add teacher content
-// @route   POST /api/teacher/content
+// @desc    Update a quiz
+// @route   PUT /api/teacher/quiz/:id
 // @access  Private/Teacher
-const addTeacherContent = async (req, res) => {
+const updateQuiz = async (req, res) => {
     try {
-        const { classNumber, subject, chapter, contentType, body } = req.body;
+        const { title, description, classNumber, subject, questions } = req.body;
+        const quiz = await TeacherQuiz.findById(req.params.id);
 
-        const content = await TeacherContent.create({
-            teacherId: req.user._id,
-            classNumber,
-            subject,
-            chapter,
-            contentType,
-            body
-        });
+        if (!quiz) {
+            return res.status(404).json({ message: 'Quiz not found' });
+        }
 
-        res.status(201).json(content);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
+        if (quiz.teacherId.toString() !== req.user._id.toString()) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
 
-// @desc    Get teacher dashboard stats
-// @route   GET /api/teacher/stats
-// @access  Private/Teacher
-const getTeacherStats = async (req, res) => {
-    try {
-        const teacherId = req.user._id;
+        quiz.title = title || quiz.title;
+        quiz.description = description || quiz.description;
+        quiz.classNumber = classNumber || quiz.classNumber;
+        quiz.subject = subject || quiz.subject;
+        quiz.questions = questions || quiz.questions;
 
-        const totalStudents = await User.countDocuments({ role: 'student', teacherId, status: 'active' });
-
-        // Pending approvals (students waiting for this teacher)
-        // Note: Currently students are linked to teacher via teacherId. 
-        // If they are pending, they might not have teacherId set if they registered independently, 
-        // but if they selected the teacher during registration (if that flow exists) or if the teacher added them.
-        // Assuming for now we count pending students linked to this teacher.
-        const pendingApprovals = await User.countDocuments({ role: 'student', teacherId, status: 'pending' });
-
-        // Average Attendance (Placeholder logic)
-        // In a real app, you'd calculate this from an Attendance model.
-        // For now, we'll return a mock value or calculate based on 'lastActiveDate' of students.
-        const students = await User.find({ role: 'student', teacherId }).select('lastActiveDate');
-        let activeCount = 0;
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-        students.forEach(s => {
-            if (s.lastActiveDate && s.lastActiveDate > oneWeekAgo) {
-                activeCount++;
-            }
-        });
-
-        const averageAttendance = students.length > 0 ? Math.round((activeCount / students.length) * 100) + '%' : '0%';
-
-        res.json({
-            totalStudents,
-            pendingApprovals,
-            averageAttendance
-        });
+        const updatedQuiz = await quiz.save();
+        res.json(updatedQuiz);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
 module.exports = {
-    createStudent,
-    getStudents,
-    updateStudent,
-    deleteStudent,
+    getTeacherStats,
+    createQuiz,
+    assignQuiz,
     assignChapter,
-    getStudentAnalytics,
-    addTeacherContent,
-    getTeacherStats
+    createChapter,
+    assignCustomChapter,
+    getMyContent,
+    getStudents,
+    deleteQuiz,
+    updateQuiz
 };

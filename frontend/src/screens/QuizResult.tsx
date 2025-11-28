@@ -143,7 +143,14 @@ const QuizResult = ({ route, navigation }: any) => {
                             )}
                             <Button
                                 mode="contained"
-                                onPress={() => navigation.replace('Quiz')}
+                                onPress={() => navigation.replace('Quiz', {
+                                    quizData: {
+                                        id: quizId,
+                                        quizId: quizId,
+                                        questions: questions,
+                                        title: route.params.title || 'Retry Quiz'
+                                    }
+                                })}
                                 style={[styles.button, { backgroundColor: '#FFD700' }]}
                                 textColor="#333"
                                 contentStyle={{ paddingVertical: 8 }}
@@ -152,7 +159,27 @@ const QuizResult = ({ route, navigation }: any) => {
                             </Button>
                             <Button
                                 mode="text"
-                                onPress={() => navigation.navigate('Tabs', { screen: 'HomeTab' })}
+                                onPress={() => {
+                                    // Check if we are in TeacherNavigator (can check by route params or just try-catch/conditional)
+                                    // Better approach: Check if 'TeacherHome' exists in the stack or just go back to root
+                                    // For now, let's try to navigate to 'TeacherHome' if 'Tabs' fails, or check user role if available in context
+                                    // But simpler: just go back to the beginning of the stack or specific screen
+
+                                    // Since we don't have easy access to user role here without context, 
+                                    // we can check if we can go back to 'TeacherClassroom' or 'TeacherHome'
+                                    // Or simply use popToTop() if we want to go to the start of the stack
+
+                                    // Let's try to navigate to 'TeacherHome' if we are a teacher (we can guess if 'TeacherClassroom' was in history)
+                                    // A safer bet is to check if we can navigate to 'Tabs', if not, try 'TeacherHome'
+
+                                    try {
+                                        // Try navigating to MainTabs (Student)
+                                        navigation.navigate('MainTabs', { screen: 'HomeTab' });
+                                    } catch (e) {
+                                        // If that fails, try TeacherHome (Teacher)
+                                        navigation.navigate('TeacherHome');
+                                    }
+                                }}
                                 style={styles.button}
                                 textColor="#fff"
                                 contentStyle={{ paddingVertical: 8 }}

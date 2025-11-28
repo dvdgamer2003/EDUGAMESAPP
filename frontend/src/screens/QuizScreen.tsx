@@ -10,8 +10,9 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { soundManager } from '../utils/soundEffects';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import api from '../services/api';
 
-const QuizScreen = ({ navigation }: any) => {
+const QuizScreen = ({ navigation, route }: any) => {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const { containerStyle, isMobile } = useResponsive();
@@ -22,6 +23,8 @@ const QuizScreen = ({ navigation }: any) => {
     const [loading, setLoading] = useState(true);
     const [isAnswered, setIsAnswered] = useState(false);
     const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
+
+    const { quizData, previewMode } = (route.params as any) || {};
 
     useEffect(() => {
         loadQuiz();
@@ -34,11 +37,37 @@ const QuizScreen = ({ navigation }: any) => {
     const loadQuiz = async () => {
         setLoading(true);
         try {
-            const quizData = await getRandomQuiz();
-            setQuiz(quizData);
-            // Initialize user answers array
             if (quizData) {
-                setUserAnswers(new Array(quizData.questions.length).fill(null));
+                let fullQuizData = quizData;
+
+                // If questions are missing, fetch the full quiz
+                if (!quizData.questions && quizData.quizId) {
+                    try {
+                        const response = await api.get(`/student/quiz/${quizData.quizId}`);
+                        fullQuizData = response.data;
+                    } catch (err) {
+                        console.error('Failed to fetch full quiz details', err);
+                    }
+                }
+
+                if (fullQuizData.questions) {
+                    const formattedQuiz: Quiz = {
+                        id: fullQuizData._id || fullQuizData.id,
+                        title: fullQuizData.title,
+                        questions: fullQuizData.questions,
+                    };
+                    setQuiz(formattedQuiz);
+                    setUserAnswers(new Array(formattedQuiz.questions.length).fill(null));
+                } else {
+                    // Fallback or error handling if still no questions
+                    console.error('Quiz data missing questions even after fetch attempt');
+                }
+            } else {
+                const randomQuiz = await getRandomQuiz();
+                setQuiz(randomQuiz);
+                if (randomQuiz) {
+                    setUserAnswers(new Array(randomQuiz.questions.length).fill(null));
+                }
             }
         } catch (error) {
             console.error('Failed to load quiz:', error);
@@ -91,6 +120,7 @@ const QuizScreen = ({ navigation }: any) => {
             quizId: quiz?.id,
             questions: quiz?.questions,
             userAnswers: userAnswers,
+            title: quiz?.title,
         });
     };
 

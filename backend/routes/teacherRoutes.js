@@ -1,48 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const {
-    createStudent,
-    getStudents,
-    updateStudent,
-    deleteStudent,
-    assignChapter,
-    getStudentAnalytics,
-    addTeacherContent,
-    getTeacherStats
-} = require('../controllers/teacherController');
-const { protect } = require('../middleware/auth');
+const { getTeacherStats, createQuiz, assignQuiz, assignChapter, createChapter, assignCustomChapter, getMyContent, getStudents, deleteQuiz, updateQuiz } = require('../controllers/teacherController');
+const { protect, teacherOnly } = require('../middleware/auth');
 
-// Middleware to check for teacher role
-const teacherOnly = (req, res, next) => {
-    if (req.user && req.user.role === 'teacher') {
-        next();
-    } else {
-        res.status(403).json({ message: 'Teacher access required' });
-    }
-};
-
-router.use(protect, teacherOnly);
-
-router.route('/student')
-    .post(createStudent);
-
-router.route('/students')
-    .get(getStudents);
-
-router.route('/student/:id')
-    .put(updateStudent)
-    .delete(deleteStudent);
-
-router.route('/assign')
-    .post(assignChapter);
-
-router.route('/analytics/:studentId')
-    .get(getStudentAnalytics);
-
-router.route('/content')
-    .post(addTeacherContent);
-
-router.route('/stats')
-    .get(getTeacherStats);
+router.get('/stats', protect, teacherOnly, getTeacherStats);
+router.get('/content', protect, teacherOnly, getMyContent);
+router.get('/students', protect, teacherOnly, getStudents);
+router.post('/quiz', protect, teacherOnly, createQuiz);
+router.delete('/quiz/:id', protect, teacherOnly, deleteQuiz);
+router.put('/quiz/:id', protect, teacherOnly, updateQuiz);
+router.post('/assign-quiz', protect, teacherOnly, assignQuiz);
+router.post('/assign-chapter', protect, teacherOnly, assignChapter);
+router.post('/chapter', protect, teacherOnly, createChapter);
+router.post('/assign-custom-chapter', protect, teacherOnly, assignCustomChapter);
 
 module.exports = router;
