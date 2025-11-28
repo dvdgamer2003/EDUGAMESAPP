@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import { View, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, StatusBar } from 'react-native';
 import { Text, useTheme, Avatar, ProgressBar, Surface, IconButton } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -36,6 +37,8 @@ const LearnDashboardScreen = ({ navigation }: any) => {
 
     const styles = createStyles(isDark);
 
+    const isFocused = useIsFocused();
+
     useEffect(() => {
         if (user?.selectedClass) {
             setSelectedClass(user.selectedClass);
@@ -43,10 +46,10 @@ const LearnDashboardScreen = ({ navigation }: any) => {
     }, [user?.selectedClass]);
 
     useEffect(() => {
-        if (selectedClass) {
+        if (selectedClass && isFocused) {
             loadSubjects();
         }
-    }, [selectedClass]);
+    }, [selectedClass, isFocused]);
 
     const loadSubjects = async () => {
         if (!selectedClass) return;
@@ -64,8 +67,13 @@ const LearnDashboardScreen = ({ navigation }: any) => {
                     try {
                         const chapters = await learnService.getChapters(subject._id);
                         const chapterIds = chapters.map((ch: any) => ch._id);
-                        const progress = await progressService.calculateSubjectProgress(subject._id, chapterIds);
-                        return { ...subject, progress };
+                        // Fix: Use getSubjectProgress instead of calculateSubjectProgress
+                        const progressData = await progressService.getSubjectProgress(
+                            subject._id,
+                            `class-${selectedClass}`,
+                            chapterIds.length
+                        );
+                        return { ...subject, progress: progressData.progress / 100 }; // Convert 0-100 to 0-1
                     } catch (e) {
                         return { ...subject, progress: 0 };
                     }

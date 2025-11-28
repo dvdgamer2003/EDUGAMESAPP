@@ -14,7 +14,7 @@ interface ClassSelectionScreenProps {
 }
 
 const ClassSelectionScreen: React.FC<ClassSelectionScreenProps> = ({ navigation, route }) => {
-    const { token } = useAuth();
+    const { token, updateUser } = useAuth();
     const [selectedClass, setSelectedClass] = useState<ClassLevel | null>(null);
     const [loading, setLoading] = useState(false);
     const isFromSettings = route?.params?.fromSettings || false;
@@ -38,6 +38,10 @@ const ClassSelectionScreen: React.FC<ClassSelectionScreenProps> = ({ navigation,
 
         try {
             await classService.selectClass(classId, token || undefined);
+
+            // Update context immediately to reflect changes
+            const classNumber = parseInt(classId.replace('class-', ''));
+            await updateUser({ selectedClass: classNumber });
 
             // Navigate based on context
             if (isFromSettings) {

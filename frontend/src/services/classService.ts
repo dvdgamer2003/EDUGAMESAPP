@@ -54,6 +54,21 @@ class ClassService {
         }
     }
 
+    // Save class selection locally without syncing (for initial load or migration)
+    async saveClassLocally(classId: ClassLevel): Promise<void> {
+        try {
+            const selection: ClassSelection = {
+                classId,
+                selectedAt: new Date().toISOString(),
+                synced: true, // Assume synced if coming from backend
+            };
+            await AsyncStorage.setItem(CLASS_STORAGE_KEY, JSON.stringify(selection));
+            console.log('[ClassService] Class saved locally (no sync)');
+        } catch (error) {
+            console.error('[ClassService] Error saving class locally:', error);
+        }
+    }
+
     // Sync class selection to backend
     private async syncClassToBackend(classId: ClassLevel, token: string): Promise<void> {
         const netInfo = await NetInfo.fetch();

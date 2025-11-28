@@ -89,6 +89,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // If logged in user, sync with backend
             if (storedToken) {
                 await syncWithBackend(storedToken);
+
+                // Retry syncing class selection if needed
+                const { classService } = require('../services/classService');
+                await classService.retrySyncIfNeeded(storedToken);
             }
         } catch (e) {
             console.error('Failed to load user', e);
@@ -136,9 +140,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Call the real backend API - role determined by backend from database
             const response = await api.post(ENDPOINTS.LOGIN, { email, password });
 
-            const { _id, name, email: userEmail, role: userRole, status: userStatus, xp: userXp, streak: userStreak, token: authToken } = response.data;
+            const { _id, name, email: userEmail, role: userRole, status: userStatus, xp: userXp, streak: userStreak, selectedClass: userClass, token: authToken } = response.data;
 
-            const userData = { _id, name, email: userEmail, role: userRole, status: userStatus };
+            const userData = { _id, name, email: userEmail, role: userRole, status: userStatus, selectedClass: userClass };
 
             setUser(userData);
             setToken(authToken);
@@ -151,6 +155,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             await storeData('user_xp', (userXp || 0).toString());
             await storeData('user_streak', (userStreak || 0).toString());
             await removeData('is_guest');
+
+            // Sync class selection if needed
+            if (userClass) {
+                await storeData('selected_class', JSON.stringify({
+                    classId: `class-${userClass}`,
+                    selectedAt: new Date().toISOString(),
+                    synced: true
+                }));
+            }
         } catch (error) {
             console.error('Login failed', error);
             throw error;
@@ -176,9 +189,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 hasToken: !!response.data?.token
             });
 
-            const { _id, name, email, role, status, token: authToken } = response.data;
+            const { _id, name, email, role, status, selectedClass: userClass, token: authToken } = response.data;
 
-            const userDataObj = { _id, name, email, role, status };
+            const userDataObj = { _id, name, email, role, status, selectedClass: userClass };
 
             setUser(userDataObj);
             setToken(authToken);
@@ -255,9 +268,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const updateUser = async (data: { name?: string; email?: string; selectedClass?: number | null; avatar?: string | null; themeColor?: string }) => {
         try {
-            // Call backend API to update profile
-            const response = await api.put('/auth/profile', data);
-            const updatedUser = { ...user, ...response.data };
+            let updatedUser = { ...user };
+
+            if (token && !isGuest) {
+                // Call backend API to update profile if authenticated
+                const response = await api.put('/auth/profile', data);
+                updatedUser = { ...updatedUser, ...response.data };
+            } else {
+                // Guest mode: just update local object
+                updatedUser = { ...updatedUser, ...data };
+            }
+
+            // If selectedClass was updated, ensure it's in the user object and sync with classService
+            if (data.selectedClass) {
+                updatedUser.selectedClass = data.selectedClass;
+
+                // Sync with classService
+                const { classService } = require('../services/classService');
+                await classService.saveClassLocally(`class-${data.selectedClass}`);
+            }
+
             setUser(updatedUser);
             await storeData(STORAGE_KEYS.USER_DATA, updatedUser);
         } catch (error) {

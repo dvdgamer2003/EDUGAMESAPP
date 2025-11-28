@@ -1,110 +1,41 @@
+
+
 import class6ScienceChapters from '../assets/data/class6/science/chapters.json';
-import class6ScienceCh1 from '../assets/data/class6/science/chapter-sci-6-ch1.json';
 import class6MathChapters from '../assets/data/class6/mathematics/chapters.json';
-import class6MathCh1 from '../assets/data/class6/mathematics/chapter-math-6-ch1.json';
 import class6EnglishChapters from '../assets/data/class6/english/chapters.json';
-import class6EnglishCh1 from '../assets/data/class6/english/chapter-eng-6-ch1.json';
 import class6ComputerChapters from '../assets/data/class6/computer/chapters.json';
-import class6ComputerCh1 from '../assets/data/class6/computer/chapter-comp-6-ch1.json';
 
 import class7ScienceChapters from '../assets/data/class7/science/chapters.json';
-import class7ScienceCh1 from '../assets/data/class7/science/chapter-sci-7-ch1.json';
 import class7MathChapters from '../assets/data/class7/mathematics/chapters.json';
-import class7MathCh1 from '../assets/data/class7/mathematics/chapter-math-7-ch1.json';
 import class7EnglishChapters from '../assets/data/class7/english/chapters.json';
-import class7EnglishCh1 from '../assets/data/class7/english/chapter-eng-7-ch1.json';
 import class7ComputerChapters from '../assets/data/class7/computer/chapters.json';
-import class7ComputerCh1 from '../assets/data/class7/computer/chapter-comp-7-ch1.json';
 
 import class8ScienceChapters from '../assets/data/class8/science/chapters.json';
-import class8ScienceCh1 from '../assets/data/class8/science/chapter-sci-8-ch1.json';
 import class8MathChapters from '../assets/data/class8/mathematics/chapters.json';
-import class8MathCh1 from '../assets/data/class8/mathematics/chapter-math-8-ch1.json';
 import class8EnglishChapters from '../assets/data/class8/english/chapters.json';
-import class8EnglishCh1 from '../assets/data/class8/english/chapter-eng-8-ch1.json';
 import class8ComputerChapters from '../assets/data/class8/computer/chapters.json';
-import class8ComputerCh1 from '../assets/data/class8/computer/chapter-comp-8-ch1.json';
 
 import class9ScienceChapters from '../assets/data/class9/science/chapters.json';
-import class9ScienceCh1 from '../assets/data/class9/science/chapter-sci-9-ch1.json';
 import class9MathChapters from '../assets/data/class9/mathematics/chapters.json';
-import class9MathCh1 from '../assets/data/class9/mathematics/chapter-math-9-ch1.json';
 import class9EnglishChapters from '../assets/data/class9/english/chapters.json';
-import class9EnglishCh1 from '../assets/data/class9/english/chapter-eng-9-ch1.json';
 import class9ComputerChapters from '../assets/data/class9/computer/chapters.json';
-import class9ComputerCh1 from '../assets/data/class9/computer/chapter-comp-9-ch1.json';
 
 import class10ScienceChapters from '../assets/data/class10/science/chapters.json';
-import class10ScienceCh1 from '../assets/data/class10/science/chapter-sci-10-ch1.json';
 import class10MathChapters from '../assets/data/class10/mathematics/chapters.json';
-import class10MathCh1 from '../assets/data/class10/mathematics/chapter-math-10-ch1.json';
 import class10EnglishChapters from '../assets/data/class10/english/chapters.json';
-import class10EnglishCh1 from '../assets/data/class10/english/chapter-eng-10-ch1.json';
 import class10ComputerChapters from '../assets/data/class10/computer/chapters.json';
-import class10ComputerCh1 from '../assets/data/class10/computer/chapter-comp-10-ch1.json';
 
 import class11ScienceChapters from '../assets/data/class11/science/chapters.json';
-import class11ScienceCh1 from '../assets/data/class11/science/chapter-sci-11-ch1.json';
 import class11MathChapters from '../assets/data/class11/mathematics/chapters.json';
-import class11MathCh1 from '../assets/data/class11/mathematics/chapter-math-11-ch1.json';
 import class11EnglishChapters from '../assets/data/class11/english/chapters.json';
-import class11EnglishCh1 from '../assets/data/class11/english/chapter-eng-11-ch1.json';
 import class11ComputerChapters from '../assets/data/class11/computer/chapters.json';
-import class11ComputerCh1 from '../assets/data/class11/computer/chapter-comp-11-ch1.json';
 
 import class12ScienceChapters from '../assets/data/class12/science/chapters.json';
-import class12ScienceCh1 from '../assets/data/class12/science/chapter-sci-12-ch1.json';
 import class12MathChapters from '../assets/data/class12/mathematics/chapters.json';
-import class12MathCh1 from '../assets/data/class12/mathematics/chapter-math-12-ch1.json';
 import class12EnglishChapters from '../assets/data/class12/english/chapters.json';
-import class12EnglishCh1 from '../assets/data/class12/english/chapter-eng-12-ch1.json';
 import class12ComputerChapters from '../assets/data/class12/computer/chapters.json';
-import class12ComputerCh1 from '../assets/data/class12/computer/chapter-comp-12-ch1.json';
 
-// Map of chapter IDs to their content files
-const chapterContentMap: Record<string, any> = {
-    // Class 6
-    'sci-6-ch1': class6ScienceCh1,
-    'math-6-ch1': class6MathCh1,
-    'eng-6-ch1': class6EnglishCh1,
-    'comp-6-ch1': class6ComputerCh1,
-
-    // Class 7
-    'sci-7-ch1': class7ScienceCh1,
-    'math-7-ch1': class7MathCh1,
-    'eng-7-ch1': class7EnglishCh1,
-    'comp-7-ch1': class7ComputerCh1,
-
-    // Class 8
-    'sci-8-ch1': class8ScienceCh1,
-    'math-8-ch1': class8MathCh1,
-    'eng-8-ch1': class8EnglishCh1,
-    'comp-8-ch1': class8ComputerCh1,
-
-    // Class 9
-    'sci-9-ch1': class9ScienceCh1,
-    'math-9-ch1': class9MathCh1,
-    'eng-9-ch1': class9EnglishCh1,
-    'comp-9-ch1': class9ComputerCh1,
-
-    // Class 10
-    'sci-10-ch1': class10ScienceCh1,
-    'math-10-ch1': class10MathCh1,
-    'eng-10-ch1': class10EnglishCh1,
-    'comp-10-ch1': class10ComputerCh1,
-
-    // Class 11
-    'sci-11-ch1': class11ScienceCh1,
-    'math-11-ch1': class11MathCh1,
-    'eng-11-ch1': class11EnglishCh1,
-    'comp-11-ch1': class11ComputerCh1,
-
-    // Class 12
-    'sci-12-ch1': class12ScienceCh1,
-    'math-12-ch1': class12MathCh1,
-    'eng-12-ch1': class12EnglishCh1,
-    'comp-12-ch1': class12ComputerCh1,
-};
+import { chapterContentMap } from './generatedContentMap';
 
 /**
  * Offline Data Service
@@ -709,14 +640,17 @@ export const offlineDataService = {
         // Check if we have content for this chapter
         let chapterContent = chapterContentMap[chapterId];
 
-        // Fallback to Chapter 1 if content is missing (for demo purposes)
+        console.log('[OfflineData] getLessons', {
+            chapterId,
+            hasContent: !!chapterContent,
+            contentKeys: chapterContent ? Object.keys(chapterContent) : [],
+            lessonsCount: chapterContent?.lessons?.length
+        });
+
+        // If content is missing, return null
         if (!chapterContent) {
-            const parts = chapterId.split('-');
-            if (parts.length >= 3) {
-                // Construct fallback ID: subject-class-ch1 (e.g., sci-6-ch1)
-                const fallbackId = `${parts[0]}-${parts[1]}-ch1`;
-                chapterContent = chapterContentMap[fallbackId];
-            }
+            console.log('[OfflineData] Content missing for', chapterId);
+            return null;
         }
 
         if (chapterContent && chapterContent.lessons) {
@@ -731,7 +665,6 @@ export const offlineDataService = {
             }));
         }
 
-        // If no content file yet, return placeholder
         return [];
     },
 
@@ -740,27 +673,25 @@ export const offlineDataService = {
      */
     getChapterContent: (chapterId: string) => {
         let chapterContent = chapterContentMap[chapterId];
-
-        // Fallback to Chapter 1 if content is missing
         if (!chapterContent) {
-            const parts = chapterId.split('-');
-            if (parts.length >= 3) {
-                const fallbackId = `${parts[0]}-${parts[1]}-ch1`;
-                chapterContent = chapterContentMap[fallbackId];
-            }
-        }
-
-        if (chapterContent) {
             return {
-                id: chapterContent.id,
-                title: chapterContent.title,
-                combinedContent: chapterContent.lessons.map((l: any) =>
-                    `# ${l.title}\n\n${l.content}`
-                ).join('\n\n---\n\n'),
-                lessons: chapterContent.lessons,
-                quiz: chapterContent.quiz
+                id: chapterId,
+                title: 'Content Coming Soon',
+                combinedContent: '# Content Coming Soon\n\nWe are working on adding this chapter content. Please check back later!',
+                lessons: [],
+                quiz: null
             };
         }
+
+        return {
+            id: chapterContent.id,
+            title: chapterContent.title,
+            combinedContent: chapterContent.lessons.map((l: any) =>
+                `# ${l.title}\n\n${l.content}`
+            ).join('\n\n---\n\n'),
+            lessons: chapterContent.lessons,
+            quiz: chapterContent.quiz
+        };
 
         return null;
     },
@@ -779,13 +710,9 @@ export const offlineDataService = {
 
         let chapterContent = chapterContentMap[chapterId];
 
-        // Fallback to Chapter 1 if content is missing
+        // If content is missing, return null
         if (!chapterContent) {
-            const parts = chapterId.split('-');
-            if (parts.length >= 3) {
-                const fallbackId = `${parts[0]}-${parts[1]}-ch1`;
-                chapterContent = chapterContentMap[fallbackId];
-            }
+            return null;
         }
 
         if (chapterContent && chapterContent.lessons) {
@@ -821,13 +748,9 @@ export const offlineDataService = {
         // Get chapter content (with fallback)
         let chapterContent = chapterContentMap[chapterId];
 
-        // Fallback to Chapter 1 if content is missing
+        // If content is missing, return empty array
         if (!chapterContent) {
-            const parts = chapterId.split('-');
-            if (parts.length >= 3) {
-                const fallbackId = `${parts[0]}-${parts[1]}-ch1`;
-                chapterContent = chapterContentMap[fallbackId];
-            }
+            return [];
         }
 
         // Extract and transform quiz questions

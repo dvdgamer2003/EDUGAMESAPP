@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import { View, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { Text, useTheme, ActivityIndicator, ProgressBar, Surface, IconButton } from 'react-native-paper';
 import { learnService } from '../../services/learnService';
@@ -17,11 +18,15 @@ const ChapterListScreen = ({ route, navigation }: any) => {
     const [chapters, setChapters] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const isFocused = useIsFocused();
+
     const styles = createStyles(isDark);
 
     useEffect(() => {
-        loadChapters();
-    }, []);
+        if (isFocused) {
+            loadChapters();
+        }
+    }, [isFocused]);
 
     const loadChapters = async () => {
         try {
